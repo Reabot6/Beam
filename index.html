@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beam by Reabot6</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080810;
+    --surface: #0f0f1a;
+    --surface2: #161625;
+    --border: #1e1e35;
+    --purple: #8b5cf6;
+    --purple-dim: #4c1d95;
+    --purple-glow: rgba(139, 92, 246, 0.15);
+    --purple-glow-strong: rgba(139, 92, 246, 0.3);
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-muted: #334155;
+    --green: #10b981;
+    --red: #ef4444;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--purple);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px var(--purple-glow-strong);
+  }
+
+  .logo-icon svg { width: 18px; height: 18px; }
+
+  .logo-name {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .logo-name span { color: var(--purple); }
+
+  .connect-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .connect-btn:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    background: var(--purple-glow);
+    box-shadow: 0 0 16px var(--purple-glow);
+  }
+
+  .connect-btn .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 32px;
+    width: fit-content;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 10px 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .tab.active {
+    background: var(--purple);
+    color: white;
+    box-shadow: 0 0 20px var(--purple-glow-strong);
+  }
+
+  .tab:not(.active):hover {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SEND PANEL ── */
+  .send-area {
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    padding: 80px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .send-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--purple-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .send-area:hover::before,
+  .send-area.drag-over::before { opacity: 1; }
+
+  .send-area:hover,
+  .send-area.drag-over {
+    border-color: var(--purple);
+    box-shadow: 0 0 40px var(--purple-glow);
+  }
+
+  .send-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .send-area:hover .send-icon,
+  .send-area.drag-over .send-icon {
+    border-color: var(--purple);
+    background: var(--purple-glow);
+    box-shadow: 0 0 24px var(--purple-glow-strong);
+  }
+
+  .send-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--text-dim);
+    transition: stroke 0.3s;
+  }
+
+  .send-area:hover .send-icon svg,
+  .send-area.drag-over .send-icon svg { stroke: var(--purple); }
+
+  .send-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .send-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+  }
+
+  #fileInput { display: none; }
+
+  /* progress */
+  .progress-wrap {
+    display: none;
+    margin-top: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .progress-filename { color: var(--text); }
+  .progress-pct { color: var(--purple); }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--purple);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.1s;
+    box-shadow: 0 0 8px var(--purple);
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    max-width: 320px;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* ── RECEIVE PANEL ── */
+  .receive-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .receive-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .refresh-btn:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+  }
+
+  .files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .file-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .file-card:hover {
+    border-color: var(--purple);
+    background: var(--surface2);
+    box-shadow: 0 0 20px var(--purple-glow);
+    transform: translateY(-2px);
+  }
+
+  .file-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .file-card-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+
+  .file-card-dl {
+    font-size: 10px;
+    color: var(--purple);
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .file-card:hover .file-card-dl { opacity: 1; }
+
+  .empty-state {
+    padding: 80px 40px;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+  }
+
+  .empty-state p {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── QR MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 8, 16, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+    max-width: 340px;
+    width: 90%;
+  }
+
+  .modal-overlay.show .modal { transform: scale(1); }
+
+  .modal-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .qr-frame {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--purple);
+    box-shadow: 0 0 40px var(--purple-glow-strong);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qr-frame img { width: 100%; height: 100%; object-fit: contain; }
+
+  .modal-url {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--purple);
+    background: var(--purple-glow);
+    border: 1px solid var(--purple-dim);
+    padding: 8px 16px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+    text-align: center;
+  }
+
+  .modal-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 10px 28px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .modal-close:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    .files-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .send-area { padding: 60px 24px; }
+    header { padding: 24px 0 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+      <div class="logo-name">beam<span>.</span></div>
+    </div>
+    <button class="connect-btn" onclick="openQR()">
+      <span class="dot"></span>
+      CONNECT
+    </button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('send', this)">SEND</button>
+    <button class="tab" onclick="switchTab('receive', this)">RECEIVE</button>
+  </div>
+
+  <!-- SEND -->
+  <div class="panel active" id="panel-send">
+    <div class="send-area" id="dropzone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <div class="send-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <div class="send-label">TAP TO BEAM A FILE</div>
+      <div class="send-sub">or drag and drop anything here</div>
+    </div>
+    <input type="file" id="fileInput" onchange="handleFileSelect(event)">
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-info">
+        <span class="progress-filename" id="progressName">—</span>
+        <span class="progress-pct" id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIVE -->
+  <div class="panel" id="panel-receive">
+    <div class="receive-header">
+      <div class="receive-title">AVAILABLE FILES</div>
+      <button class="refresh-btn" onclick="loadFiles()">↻ REFRESH</button>
+    </div>
+    <div class="files-grid" id="filesGrid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <p>NO FILES AVAILABLE YET</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeQROnOverlay(event)">
+  <div class="modal">
+    <div class="modal-title">SCAN TO CONNECT</div>
+    <div class="qr-frame">
+      <img id="qrImage" src="/qr" alt="QR Code">
+    </div>
+    <div class="modal-url" id="modalUrl">loading...</div>
+    <div class="modal-hint">Open your phone camera and point it at the code. No app needed.</div>
+    <button class="modal-close" onclick="closeQR()">CLOSE</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── TABS ──
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'))
+    el.classList.add('active')
+    document.getElementById('panel-' + name).classList.add('active')
+    if (name === 'receive') loadFiles()
+  }
+
+  // ── FILE TYPE ICONS ──
+  function getIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase()
+    const map = {
+      pdf: { icon: '📄', bg: '#1a0a0a' },
+      doc: { icon: '📝', bg: '#0a1a0a' }, docx: { icon: '📝', bg: '#0a1a0a' },
+      xls: { icon: '📊', bg: '#0a1a0a' }, xlsx: { icon: '📊', bg: '#0a1a0a' },
+      jpg: { icon: '🖼️', bg: '#0a0a1a' }, jpeg: { icon: '🖼️', bg: '#0a0a1a' },
+      png: { icon: '🖼️', bg: '#0a0a1a' }, gif: { icon: '🖼️', bg: '#0a0a1a' },
+      mp4: { icon: '🎬', bg: '#1a0a1a' }, mov: { icon: '🎬', bg: '#1a0a1a' },
+      mp3: { icon: '🎵', bg: '#0a1a1a' }, wav: { icon: '🎵', bg: '#0a1a1a' },
+      zip: { icon: '📦', bg: '#1a1a0a' }, rar: { icon: '📦', bg: '#1a1a0a' },
+      txt: { icon: '📃', bg: '#111' },
+      js: { icon: '⚙️', bg: '#111' }, py: { icon: '🐍', bg: '#111' },
+    }
+    return map[ext] || { icon: '📁', bg: '#111' }
+  }
+
+  // ── LOAD FILES ──
+  async function loadFiles() {
+    try {
+      const res = await fetch('/files')
+      const files = await res.json()
+      const grid = document.getElementById('filesGrid')
+
+      if (!files.length) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>NO FILES AVAILABLE YET</p></div>'
+        return
+      }
+
+      grid.innerHTML = files.map(name => {
+        const { icon, bg } = getIcon(name)
+        return `
+          <div class="file-card" onclick="downloadFile('${name}')">
+            <div class="file-card-icon" style="background:${bg}">${icon}</div>
+            <div class="file-card-name">${name}</div>
+            <div class="file-card-dl">↓ DOWNLOAD</div>
+          </div>`
+      }).join('')
+    } catch (e) {
+      showToast('Could not load files', 'error')
+    }
+  }
+
+  // ── DOWNLOAD ──
+  function downloadFile(filename) {
+    window.location.href = '/download?filename=' + encodeURIComponent(filename)
+    showToast('Downloading ' + filename, 'success')
+  }
+
+  // ── UPLOAD ──
+  function handleFileSelect(e) {
+    const file = e.target.files[0]
+    if (file) uploadFile(file)
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault()
+    document.getElementById('dropzone').classList.add('drag-over')
+  }
+
+  function handleDragLeave() {
+    document.getElementById('dropzone').classList.remove('drag-over')
+  }
+
+  function handleDrop(e) {
+    e.preventDefault()
+    document.getElementById('dropzone').classList.remove('drag-over')
+    const file = e.dataTransfer.files[0]
+    if (file) uploadFile(file)
+  }
+
+  async function uploadFile(file) {
+    const wrap = document.getElementById('progressWrap')
+    const bar = document.getElementById('progressBar')
+    const pct = document.getElementById('progressPct')
+    const name = document.getElementById('progressName')
+
+    wrap.classList.add('show')
+    name.textContent = file.name
+    bar.style.width = '0%'
+    pct.textContent = '0%'
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const xhr = new XMLHttpRequest()
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const p = Math.round((e.loaded / e.total) * 100)
+        bar.style.width = p + '%'
+        pct.textContent = p + '%'
+      }
+    }
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        showToast(file.name + ' beamed successfully', 'success')
+        setTimeout(() => wrap.classList.remove('show'), 2000)
+      } else {
+        showToast('Transfer failed', 'error')
+        wrap.classList.remove('show')
+      }
+    }
+
+    xhr.onerror = () => {
+      showToast('Transfer failed', 'error')
+      wrap.classList.remove('show')
+    }
+
+    xhr.open('POST', '/send')
+    xhr.send(formData)
+  }
+
+  // ── QR MODAL ──
+  function openQR() {
+    document.getElementById('modalOverlay').classList.add('show')
+    fetch('/files').then(() => {
+      document.getElementById('modalUrl').textContent = window.location.origin
+    })
+  }
+
+  function closeQR() {
+    document.getElementById('modalOverlay').classList.remove('show')
+  }
+
+  function closeQROnOverlay(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeQR()
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast')
+    t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg
+    t.className = 'toast show ' + type
+    setTimeout(() => t.className = 'toast', 3000)
+  }
+</script>
+</body>
+</html>

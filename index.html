@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beam by Reabot6</title>
+<title>Beam</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -34,7 +34,6 @@
     overflow-x: hidden;
   }
 
-  /* grid bg */
   body::before {
     content: '';
     position: fixed;
@@ -55,7 +54,6 @@
     padding: 0 20px 60px;
   }
 
-  /* ── HEADER ── */
   header {
     display: flex;
     align-items: center;
@@ -65,20 +63,13 @@
     margin-bottom: 40px;
   }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .logo { display: flex; align-items: center; gap: 12px; }
 
   .logo-icon {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     background: var(--purple);
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 20px var(--purple-glow-strong);
   }
 
@@ -86,456 +77,396 @@
 
   .logo-name {
     font-family: var(--mono);
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: var(--text);
+    font-size: 20px; font-weight: 700;
+    letter-spacing: -0.5px; color: var(--text);
   }
 
   .logo-name span { color: var(--purple); }
 
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .ws-status {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--text-muted); letter-spacing: 0.5px;
+  }
+
+  .ws-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: all 0.3s;
+  }
+
+  .ws-dot.connected { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+  .ws-dot.disconnected { background: var(--red); }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
   .connect-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
+    padding: 8px 16px; border-radius: 8px;
+    font-family: var(--mono); font-size: 12px;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
   }
 
   .connect-btn:hover {
-    border-color: var(--purple);
-    color: var(--purple);
-    background: var(--purple-glow);
-    box-shadow: 0 0 16px var(--purple-glow);
+    border-color: var(--purple); color: var(--purple);
+    background: var(--purple-glow); box-shadow: 0 0 16px var(--purple-glow);
   }
 
-  .connect-btn .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  /* ── TABS ── */
   .tabs {
-    display: flex;
-    gap: 4px;
+    display: flex; gap: 4px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 32px;
-    width: fit-content;
+    border-radius: 12px; padding: 4px;
+    margin-bottom: 32px; width: fit-content;
   }
 
   .tab {
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 1px;
-    padding: 10px 28px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 1px; padding: 10px 20px;
+    border-radius: 8px; border: none;
+    background: transparent; color: var(--text-dim);
+    cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; position: relative;
   }
 
-  .tab.active {
-    background: var(--purple);
-    color: white;
-    box-shadow: 0 0 20px var(--purple-glow-strong);
+  .tab.active { background: var(--purple); color: white; box-shadow: 0 0 20px var(--purple-glow-strong); }
+  .tab:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+  .tab-badge {
+    position: absolute; top: 4px; right: 4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 6px var(--green);
+    display: none;
   }
 
-  .tab:not(.active):hover {
-    color: var(--text);
-    background: var(--surface2);
-  }
+  .tab-badge.show { display: block; }
 
-  /* ── PANELS ── */
   .panel { display: none; animation: fadeIn 0.3s ease; }
   .panel.active { display: block; }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── SEND PANEL ── */
   .send-area {
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    padding: 80px 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-    background: var(--surface);
+    border: 1px dashed var(--border); border-radius: 16px;
+    padding: 60px 40px;
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    cursor: pointer; transition: all 0.3s;
+    position: relative; overflow: hidden; background: var(--surface);
   }
 
   .send-area::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: radial-gradient(circle at center, var(--purple-glow) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
+    opacity: 0; transition: opacity 0.3s;
   }
 
-  .send-area:hover::before,
-  .send-area.drag-over::before { opacity: 1; }
-
-  .send-area:hover,
-  .send-area.drag-over {
-    border-color: var(--purple);
-    box-shadow: 0 0 40px var(--purple-glow);
-  }
+  .send-area:hover::before, .send-area.drag-over::before { opacity: 1; }
+  .send-area:hover, .send-area.drag-over { border-color: var(--purple); box-shadow: 0 0 40px var(--purple-glow); }
 
   .send-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-    position: relative;
-    z-index: 1;
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s; position: relative; z-index: 1;
   }
 
-  .send-area:hover .send-icon,
-  .send-area.drag-over .send-icon {
-    border-color: var(--purple);
-    background: var(--purple-glow);
+  .send-area:hover .send-icon, .send-area.drag-over .send-icon {
+    border-color: var(--purple); background: var(--purple-glow);
     box-shadow: 0 0 24px var(--purple-glow-strong);
   }
 
-  .send-icon svg {
-    width: 28px;
-    height: 28px;
-    stroke: var(--text-dim);
-    transition: stroke 0.3s;
-  }
+  .send-icon svg { width: 28px; height: 28px; stroke: var(--text-dim); transition: stroke 0.3s; }
+  .send-area:hover .send-icon svg, .send-area.drag-over .send-icon svg { stroke: var(--purple); }
 
-  .send-area:hover .send-icon svg,
-  .send-area.drag-over .send-icon svg { stroke: var(--purple); }
-
-  .send-label {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    letter-spacing: 0.5px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .send-sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    position: relative;
-    z-index: 1;
-  }
+  .send-label { font-family: var(--mono); font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px; position: relative; z-index: 1; }
+  .send-sub { font-size: 12px; color: var(--text-muted); position: relative; z-index: 1; }
 
   #fileInput { display: none; }
 
-  /* progress */
-  .progress-wrap {
-    display: none;
-    margin-top: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+  .upload-queue { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  .queue-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
   }
 
-  .progress-wrap.show { display: block; }
+  .queue-item-info { display: flex; justify-content: space-between; align-items: center; }
 
-  .progress-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-family: var(--mono);
-    font-size: 12px;
+  .queue-item-name {
+    font-family: var(--mono); font-size: 11px; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%;
   }
 
-  .progress-filename { color: var(--text); }
-  .progress-pct { color: var(--purple); }
+  .queue-item-status { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .queue-item-status.sending { color: var(--purple); }
+  .queue-item-status.done { color: var(--green); }
+  .queue-item-status.error { color: var(--red); }
 
-  .progress-bar-bg {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 4px;
-    overflow: hidden;
-  }
+  .queue-bar-bg { height: 3px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .queue-bar { height: 100%; background: var(--purple); border-radius: 3px; width: 0%; transition: width 0.1s; box-shadow: 0 0 6px var(--purple); }
+  .queue-bar.done { background: var(--green); width: 100%; }
 
-  .progress-bar {
-    height: 100%;
-    background: var(--purple);
-    border-radius: 4px;
-    width: 0%;
-    transition: width 0.1s;
-    box-shadow: 0 0 8px var(--purple);
-  }
+  .receive-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 
-  /* toast */
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 20px;
-    font-family: var(--mono);
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    max-width: 320px;
-  }
-
-  .toast.show {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .toast.success { border-color: var(--green); color: var(--green); }
-  .toast.error { border-color: var(--red); color: var(--red); }
-
-  /* ── RECEIVE PANEL ── */
-  .receive-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .receive-title {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  .receive-title { font-family: var(--mono); font-size: 12px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
 
   .refresh-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 6px 14px; border-radius: 6px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
   }
 
-  .refresh-btn:hover {
-    border-color: var(--purple);
-    color: var(--purple);
-  }
+  .refresh-btn:hover { border-color: var(--purple); color: var(--purple); }
 
-  .files-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-  }
+  .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 
   .file-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 16px;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s; text-align: center;
   }
 
   .file-card:hover {
-    border-color: var(--purple);
-    background: var(--surface2);
-    box-shadow: 0 0 20px var(--purple-glow);
-    transform: translateY(-2px);
+    border-color: var(--purple); background: var(--surface2);
+    box-shadow: 0 0 20px var(--purple-glow); transform: translateY(-2px);
   }
 
-  .file-card-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-  }
-
-  .file-card-name {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text);
-    word-break: break-all;
-    line-height: 1.4;
-  }
-
-  .file-card-dl {
-    font-size: 10px;
-    color: var(--purple);
-    font-family: var(--mono);
-    letter-spacing: 0.5px;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
+  .file-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .file-card-name { font-family: var(--mono); font-size: 11px; color: var(--text); word-break: break-all; line-height: 1.4; }
+  .file-card-dl { font-size: 10px; color: var(--purple); font-family: var(--mono); letter-spacing: 0.5px; opacity: 0; transition: opacity 0.2s; }
   .file-card:hover .file-card-dl { opacity: 1; }
 
-  .empty-state {
-    padding: 80px 40px;
-    text-align: center;
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    background: var(--surface);
+  .empty-state { padding: 80px 40px; text-align: center; border: 1px dashed var(--border); border-radius: 16px; background: var(--surface); }
+  .empty-state p { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+  .devices-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .device-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px; transition: all 0.2s;
   }
 
-  .empty-state p {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
+  .device-item:hover { border-color: var(--purple); background: var(--surface2); }
+
+  .device-live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+    flex-shrink: 0; animation: pulse 2s infinite;
   }
 
-  /* ── QR MODAL ── */
+  .device-name { font-family: var(--mono); font-size: 13px; color: var(--text); flex: 1; }
+
+  .device-you {
+    font-family: var(--mono); font-size: 10px; color: var(--purple);
+    background: var(--purple-glow); border: 1px solid var(--purple-dim);
+    padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+
+  .clipboard-section { display: flex; flex-direction: column; gap: 16px; }
+
+  .clipboard-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+
+  .clipboard-input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; color: var(--text);
+    font-family: var(--sans); font-size: 14px; resize: vertical;
+    min-height: 120px; transition: border-color 0.2s; outline: none; line-height: 1.6;
+  }
+
+  .clipboard-input:focus { border-color: var(--purple); box-shadow: 0 0 20px var(--purple-glow); }
+  .clipboard-input::placeholder { color: var(--text-muted); }
+
+  .device-select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text);
+    font-family: var(--mono); font-size: 12px; outline: none;
+    cursor: pointer; transition: border-color 0.2s; appearance: none;
+  }
+
+  .device-select:focus { border-color: var(--purple); }
+
+  .send-clipboard-btn {
+    background: var(--purple); border: none; color: white;
+    padding: 14px; border-radius: 10px; font-family: var(--mono);
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 1px; box-shadow: 0 0 20px var(--purple-glow-strong);
+  }
+
+  .send-clipboard-btn:hover { background: #7c3aed; box-shadow: 0 0 30px var(--purple-glow-strong); }
+  .send-clipboard-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+  .clipboard-inbox { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .inbox-label { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+
+  .inbox-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .inbox-item.new { border-color: var(--purple); }
+  .inbox-from { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; }
+  .inbox-text { font-size: 14px; color: var(--text); line-height: 1.6; word-break: break-word; }
+
+  .inbox-copy {
+    align-self: flex-start; background: transparent;
+    border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 14px; border-radius: 6px; font-family: var(--mono);
+    font-size: 11px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+
+  .inbox-copy:hover { border-color: var(--green); color: var(--green); }
+
+  .toast {
+    position: fixed; bottom: 32px; right: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-family: var(--mono); font-size: 12px;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s; z-index: 999; max-width: 320px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.info { border-color: var(--purple); color: var(--purple); }
+
   .modal-overlay {
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: rgba(8, 8, 16, 0.85);
     backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
   }
 
-  .modal-overlay.show {
-    opacity: 1;
-    pointer-events: all;
-  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
 
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    transform: scale(0.9);
-    transition: transform 0.3s;
-    max-width: 340px;
-    width: 90%;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+    transform: scale(0.9); transition: transform 0.3s; max-width: 340px; width: 90%;
   }
 
   .modal-overlay.show .modal { transform: scale(1); }
-
-  .modal-title {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-dim);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  .modal-title { font-family: var(--mono); font-size: 13px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
 
   .qr-frame {
-    width: 200px;
-    height: 200px;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid var(--purple);
-    box-shadow: 0 0 40px var(--purple-glow-strong);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 200px; height: 200px; border-radius: 12px; overflow: hidden;
+    border: 2px solid var(--purple); box-shadow: 0 0 40px var(--purple-glow-strong);
+    background: white; display: flex; align-items: center; justify-content: center;
   }
 
   .qr-frame img { width: 100%; height: 100%; object-fit: contain; }
 
   .modal-url {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--purple);
-    background: var(--purple-glow);
-    border: 1px solid var(--purple-dim);
-    padding: 8px 16px;
-    border-radius: 6px;
-    letter-spacing: 0.5px;
-    word-break: break-all;
-    text-align: center;
+    font-family: var(--mono); font-size: 11px; color: var(--purple);
+    background: var(--purple-glow); border: 1px solid var(--purple-dim);
+    padding: 8px 16px; border-radius: 6px; letter-spacing: 0.5px;
+    word-break: break-all; text-align: center;
   }
 
-  .modal-hint {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-align: center;
-    line-height: 1.6;
-  }
+  .modal-hint { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; }
 
   .modal-close {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 10px 28px;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 10px 28px; border-radius: 8px;
+    font-family: var(--mono); font-size: 12px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
   }
 
-  .modal-close:hover {
-    border-color: var(--red);
-    color: var(--red);
+  .modal-close:hover { border-color: var(--red); color: var(--red); }
+
+  .support-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px;
+    display: flex; flex-direction: column; gap: 20px;
+    transform: scale(0.9); transition: transform 0.3s; max-width: 380px; width: 90%;
   }
 
-  /* ── MOBILE ── */
+  .modal-overlay.show .support-modal { transform: scale(1); }
+  .support-title { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+  .support-sub { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-top: 4px; }
+
+  .account-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .account-row { display: flex; justify-content: space-between; align-items: center; }
+  .account-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+  .account-value { font-family: var(--mono); font-size: 13px; color: var(--text); }
+
+  .account-number {
+    font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--purple); letter-spacing: 2px; text-align: center;
+    padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+
+  .copy-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--purple-glow); border: 1px solid var(--purple-dim);
+    color: var(--purple); padding: 10px; border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px; width: 100%;
+  }
+
+  .copy-btn:hover { background: var(--purple); color: white; border-color: var(--purple); }
+
+  .support-note { font-size: 11px; color: var(--text-muted); text-align: center; line-height: 1.6; font-style: italic; }
+
+  .support-close {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 10px; border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px; width: 100%;
+  }
+
+  .support-close:hover { border-color: var(--red); color: var(--red); }
+
+  footer {
+    margin-top: 60px; padding: 24px 0;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  .footer-left { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+  .footer-left span { color: var(--text-dim); }
+  .footer-right { display: flex; align-items: center; gap: 16px; }
+
+  .footer-link { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.5px; transition: color 0.2s; }
+  .footer-link:hover { color: var(--purple); }
+
+  .support-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 6px 14px; border-radius: 6px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+  }
+
+  .support-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-glow); }
+
   @media (max-width: 600px) {
     .files-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
     .send-area { padding: 60px 24px; }
     header { padding: 24px 0 32px; }
+    .tabs { width: 100%; }
+    .tab { flex: 1; padding: 10px 6px; font-size: 10px; }
+    footer { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -551,20 +482,32 @@
       </div>
       <div class="logo-name">beam<span>.</span></div>
     </div>
-    <button class="connect-btn" onclick="openQR()">
-      <span class="dot"></span>
-      CONNECT
-    </button>
+    <div class="header-right">
+      <div class="ws-status">
+        <div class="ws-dot" id="wsDot"></div>
+        <span id="wsLabel">CONNECTING</span>
+      </div>
+      <button class="connect-btn" onclick="openQR()">QR CONNECT</button>
+    </div>
   </header>
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('send', this)">SEND</button>
     <button class="tab" onclick="switchTab('receive', this)">RECEIVE</button>
+    <button class="tab" onclick="switchTab('devices', this)">DEVICES</button>
+    <button class="tab" id="clipboardTab" onclick="switchTab('clipboard', this)">
+      CLIPBOARD
+      <span class="tab-badge" id="clipboardBadge"></span>
+    </button>
   </div>
 
   <!-- SEND -->
   <div class="panel active" id="panel-send">
-    <div class="send-area" id="dropzone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+    <div class="send-area" id="dropzone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="handleDragOver(event)"
+      ondragleave="handleDragLeave(event)"
+      ondrop="handleDrop(event)">
       <div class="send-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -572,20 +515,11 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       </div>
-      <div class="send-label">TAP TO BEAM A FILE</div>
-      <div class="send-sub">or drag and drop anything here</div>
+      <div class="send-label">TAP TO BEAM FILES</div>
+      <div class="send-sub">select multiple files or drag and drop</div>
     </div>
-    <input type="file" id="fileInput" onchange="handleFileSelect(event)">
-
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-info">
-        <span class="progress-filename" id="progressName">—</span>
-        <span class="progress-pct" id="progressPct">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-    </div>
+    <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)">
+    <div class="upload-queue" id="uploadQueue"></div>
   </div>
 
   <!-- RECEIVE -->
@@ -595,23 +529,83 @@
       <button class="refresh-btn" onclick="loadFiles()">↻ REFRESH</button>
     </div>
     <div class="files-grid" id="filesGrid">
-      <div class="empty-state" style="grid-column:1/-1">
-        <p>NO FILES AVAILABLE YET</p>
-      </div>
+      <div class="empty-state" style="grid-column:1/-1"><p>NO FILES AVAILABLE YET</p></div>
     </div>
   </div>
+
+  <!-- DEVICES -->
+  <div class="panel" id="panel-devices">
+    <div class="receive-header">
+      <div class="receive-title">CONNECTED DEVICES</div>
+    </div>
+    <div class="devices-list" id="devicesList">
+      <div class="empty-state"><p>NO OTHER DEVICES CONNECTED</p></div>
+    </div>
+  </div>
+
+  <!-- CLIPBOARD -->
+  <div class="panel" id="panel-clipboard">
+    <div class="clipboard-section">
+      <div>
+        <div class="clipboard-label">PASTE TEXT TO SEND</div>
+        <textarea class="clipboard-input" id="clipboardText" placeholder="Paste anything here — text, links, notes..."></textarea>
+      </div>
+      <div>
+        <div class="clipboard-label">SEND TO DEVICE</div>
+        <select class="device-select" id="deviceSelect">
+          <option value="">— select a device —</option>
+        </select>
+      </div>
+      <button class="send-clipboard-btn" onclick="sendClipboard()">BEAM CLIPBOARD →</button>
+    </div>
+    <div class="clipboard-inbox" id="clipboardInbox" style="display:none">
+      <div class="inbox-label">RECEIVED</div>
+      <div id="inboxItems"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">© 2025 <span>Reabot6</span> · Beam · All rights reserved</div>
+    <div class="footer-right">
+      <a class="footer-link" href="https://github.com/Reabot6" target="_blank">github.com/Reabot6</a>
+      <button class="support-btn" onclick="openSupport()">♡ SUPPORT</button>
+    </div>
+  </footer>
 </div>
 
 <!-- QR MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeQROnOverlay(event)">
   <div class="modal">
     <div class="modal-title">SCAN TO CONNECT</div>
-    <div class="qr-frame">
-      <img id="qrImage" src="/qr" alt="QR Code">
-    </div>
+    <div class="qr-frame"><img id="qrImage" src="/qr" alt="QR Code"></div>
     <div class="modal-url" id="modalUrl">loading...</div>
     <div class="modal-hint">Open your phone camera and point it at the code. No app needed.</div>
     <button class="modal-close" onclick="closeQR()">CLOSE</button>
+  </div>
+</div>
+
+<!-- SUPPORT MODAL -->
+<div class="modal-overlay" id="supportOverlay" onclick="closeSupportOnOverlay(event)">
+  <div class="support-modal">
+    <div>
+      <div class="support-title">KEEP BEAM FREE</div>
+      <div class="support-sub">Beam is and will always be free. If it's saved you time, a small contribution helps keep it maintained and running long-term.</div>
+    </div>
+    <div class="account-card">
+      <div class="account-row">
+        <span class="account-label">Bank</span>
+        <span class="account-value">Moniepoint MSB</span>
+      </div>
+      <div class="account-row">
+        <span class="account-label">Account Name</span>
+        <span class="account-value">Adeiza Onimisi Adeolu</span>
+      </div>
+      <div class="account-number">7074088848</div>
+      <button class="copy-btn" onclick="copyAccount()">⎘ COPY ACCOUNT NUMBER</button>
+    </div>
+    <div class="support-note">No pressure at all — the app stays free either way. Thank you for using Beam.</div>
+    <button class="support-close" onclick="closeSupport()">CLOSE</button>
   </div>
 </div>
 
@@ -619,6 +613,46 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  let ws = null
+  let myDeviceId = null
+  let uploadQueue = []
+  let isUploading = false
+
+  // ── WEBSOCKET ──
+  function connectWebSocket() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+    ws = new WebSocket(`${protocol}//${window.location.host}`)
+
+    ws.onopen = () => {
+      document.getElementById('wsDot').className = 'ws-dot connected'
+      document.getElementById('wsLabel').textContent = 'LIVE'
+    }
+
+    ws.onclose = () => {
+      document.getElementById('wsDot').className = 'ws-dot disconnected'
+      document.getElementById('wsLabel').textContent = 'OFFLINE'
+      setTimeout(connectWebSocket, 3000)
+    }
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data)
+      if (message.type === 'device-list') {
+        renderDeviceList(message.devices)
+        renderDeviceSelect(message.devices)
+      }
+      if (message.type === 'your-id') {
+        myDeviceId = message.id
+      }
+      if (message.type === 'clipboard-receive') {
+        handleClipboardReceive(message)
+      }
+    }
+
+    ws.onerror = () => {
+      document.getElementById('wsDot').className = 'ws-dot disconnected'
+    }
+  }
+
   // ── TABS ──
   function switchTab(name, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
@@ -626,9 +660,36 @@
     el.classList.add('active')
     document.getElementById('panel-' + name).classList.add('active')
     if (name === 'receive') loadFiles()
+    if (name === 'clipboard') document.getElementById('clipboardBadge').classList.remove('show')
   }
 
-  // ── FILE TYPE ICONS ──
+  // ── DEVICES ──
+  function renderDeviceList(deviceList) {
+    const list = document.getElementById('devicesList')
+    if (!deviceList.length) {
+      list.innerHTML = '<div class="empty-state"><p>NO OTHER DEVICES CONNECTED</p></div>'
+      return
+    }
+    list.innerHTML = deviceList.map(d => `
+      <div class="device-item">
+        <div class="device-live-dot"></div>
+        <div class="device-name">${d.name}</div>
+        ${d.id === myDeviceId ? '<span class="device-you">YOU</span>' : ''}
+      </div>`).join('')
+  }
+
+  function renderDeviceSelect(deviceList) {
+    const select = document.getElementById('deviceSelect')
+    const others = deviceList.filter(d => d.id !== myDeviceId)
+    if (!others.length) {
+      select.innerHTML = '<option value="">— no other devices connected —</option>'
+      return
+    }
+    select.innerHTML = '<option value="">— select a device —</option>' +
+      others.map(d => `<option value="${d.id}">${d.name}</option>`).join('')
+  }
+
+  // ── FILE ICONS ──
   function getIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase()
     const map = {
@@ -646,18 +707,16 @@
     return map[ext] || { icon: '📁', bg: '#111' }
   }
 
-  // ── LOAD FILES ──
+  // ── FILES ──
   async function loadFiles() {
     try {
       const res = await fetch('/files')
       const files = await res.json()
       const grid = document.getElementById('filesGrid')
-
       if (!files.length) {
         grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><p>NO FILES AVAILABLE YET</p></div>'
         return
       }
-
       grid.innerHTML = files.map(name => {
         const { icon, bg } = getIcon(name)
         return `
@@ -667,21 +726,19 @@
             <div class="file-card-dl">↓ DOWNLOAD</div>
           </div>`
       }).join('')
-    } catch (e) {
-      showToast('Could not load files', 'error')
-    }
+    } catch (e) { showToast('Could not load files', 'error') }
   }
 
-  // ── DOWNLOAD ──
   function downloadFile(filename) {
     window.location.href = '/download?filename=' + encodeURIComponent(filename)
     showToast('Downloading ' + filename, 'success')
   }
 
-  // ── UPLOAD ──
+  // ── UPLOAD QUEUE ──
   function handleFileSelect(e) {
-    const file = e.target.files[0]
-    if (file) uploadFile(file)
+    const files = Array.from(e.target.files)
+    if (files.length) queueFiles(files)
+    e.target.value = ''
   }
 
   function handleDragOver(e) {
@@ -696,76 +753,158 @@
   function handleDrop(e) {
     e.preventDefault()
     document.getElementById('dropzone').classList.remove('drag-over')
-    const file = e.dataTransfer.files[0]
-    if (file) uploadFile(file)
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length) queueFiles(files)
   }
 
-  async function uploadFile(file) {
-    const wrap = document.getElementById('progressWrap')
-    const bar = document.getElementById('progressBar')
-    const pct = document.getElementById('progressPct')
-    const name = document.getElementById('progressName')
+  function queueFiles(files) {
+    const queue = document.getElementById('uploadQueue')
+    queue.style.display = 'flex'
 
-    wrap.classList.add('show')
-    name.textContent = file.name
-    bar.style.width = '0%'
-    pct.textContent = '0%'
+    files.forEach(file => {
+      const id = 'q' + Date.now() + Math.random().toString(36).substr(2, 4)
+      uploadQueue.push({ file, id })
+      const item = document.createElement('div')
+      item.className = 'queue-item'
+      item.id = id
+      item.innerHTML = `
+        <div class="queue-item-info">
+          <span class="queue-item-name">${file.name}</span>
+          <span class="queue-item-status" id="status-${id}">WAITING</span>
+        </div>
+        <div class="queue-bar-bg"><div class="queue-bar" id="bar-${id}"></div></div>`
+      queue.appendChild(item)
+    })
 
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const xhr = new XMLHttpRequest()
-
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const p = Math.round((e.loaded / e.total) * 100)
-        bar.style.width = p + '%'
-        pct.textContent = p + '%'
-      }
-    }
-
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        showToast(file.name + ' beamed successfully', 'success')
-        setTimeout(() => wrap.classList.remove('show'), 2000)
-      } else {
-        showToast('Transfer failed', 'error')
-        wrap.classList.remove('show')
-      }
-    }
-
-    xhr.onerror = () => {
-      showToast('Transfer failed', 'error')
-      wrap.classList.remove('show')
-    }
-
-    xhr.open('POST', '/send')
-    xhr.send(formData)
+    if (!isUploading) processQueue()
   }
 
-  // ── QR MODAL ──
-  function openQR() {
-    document.getElementById('modalOverlay').classList.add('show')
-    fetch('/files').then(() => {
-      document.getElementById('modalUrl').textContent = window.location.origin
+  async function processQueue() {
+    if (!uploadQueue.length) { isUploading = false; return }
+    isUploading = true
+    const { file, id } = uploadQueue.shift()
+    document.getElementById(`status-${id}`).textContent = 'SENDING'
+    document.getElementById(`status-${id}`).className = 'queue-item-status sending'
+    await uploadFile(file, id)
+    processQueue()
+  }
+
+  function uploadFile(file, id) {
+    return new Promise((resolve) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const p = Math.round((e.loaded / e.total) * 100)
+          document.getElementById(`bar-${id}`).style.width = p + '%'
+          document.getElementById(`status-${id}`).textContent = p + '%'
+        }
+      }
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          document.getElementById(`bar-${id}`).className = 'queue-bar done'
+          document.getElementById(`status-${id}`).textContent = 'DONE'
+          document.getElementById(`status-${id}`).className = 'queue-item-status done'
+          showToast(file.name + ' beamed', 'success')
+        } else {
+          document.getElementById(`status-${id}`).textContent = 'FAILED'
+          document.getElementById(`status-${id}`).className = 'queue-item-status error'
+        }
+        resolve()
+      }
+
+      xhr.onerror = () => {
+        document.getElementById(`status-${id}`).textContent = 'FAILED'
+        document.getElementById(`status-${id}`).className = 'queue-item-status error'
+        resolve()
+      }
+
+      xhr.open('POST', '/send')
+      xhr.send(formData)
     })
   }
 
-  function closeQR() {
-    document.getElementById('modalOverlay').classList.remove('show')
+  // ── CLIPBOARD ──
+  function sendClipboard() {
+    const text = document.getElementById('clipboardText').value.trim()
+    const targetId = document.getElementById('deviceSelect').value
+    if (!text) return showToast('Nothing to send — paste some text first', 'error')
+    if (!targetId) return showToast('Select a device to send to', 'error')
+    if (!ws || ws.readyState !== WebSocket.OPEN) return showToast('Not connected', 'error')
+
+    ws.send(JSON.stringify({ type: 'clipboard', targetId, text }))
+    document.getElementById('clipboardText').value = ''
+    showToast('Clipboard beamed', 'success')
   }
 
-  function closeQROnOverlay(e) {
-    if (e.target === document.getElementById('modalOverlay')) closeQR()
+  function handleClipboardReceive(message) {
+    const inbox = document.getElementById('clipboardInbox')
+    const items = document.getElementById('inboxItems')
+    inbox.style.display = 'flex'
+
+    const itemId = 'clip' + Date.now()
+    const newItem = document.createElement('div')
+    newItem.className = 'inbox-item new'
+    newItem.id = itemId
+    newItem.innerHTML = `
+      <div class="inbox-from">FROM ${message.from.toUpperCase()}</div>
+      <div class="inbox-text">${message.text}</div>
+      <button class="inbox-copy" onclick="copyInboxItem('${itemId}', this)">⎘ COPY</button>`
+    items.prepend(newItem)
+    setTimeout(() => newItem.classList.remove('new'), 2000)
+
+    const clipTab = document.getElementById('clipboardTab')
+    if (!clipTab.classList.contains('active')) {
+      document.getElementById('clipboardBadge').classList.add('show')
+    }
+
+    showToast('Clipboard from ' + message.from, 'info')
+  }
+
+  function copyInboxItem(itemId, btn) {
+    const text = document.querySelector(`#${itemId} .inbox-text`).textContent
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ COPIED'
+      btn.style.borderColor = 'var(--green)'
+      btn.style.color = 'var(--green)'
+      setTimeout(() => { btn.textContent = '⎘ COPY'; btn.style.borderColor = ''; btn.style.color = '' }, 2000)
+    })
+  }
+
+  // ── QR ──
+  function openQR() {
+    document.getElementById('modalOverlay').classList.add('show')
+    document.getElementById('modalUrl').textContent = window.location.origin
+  }
+
+  function closeQR() { document.getElementById('modalOverlay').classList.remove('show') }
+  function closeQROnOverlay(e) { if (e.target === document.getElementById('modalOverlay')) closeQR() }
+
+  // ── SUPPORT ──
+  function openSupport() { document.getElementById('supportOverlay').classList.add('show') }
+  function closeSupport() { document.getElementById('supportOverlay').classList.remove('show') }
+  function closeSupportOnOverlay(e) { if (e.target === document.getElementById('supportOverlay')) closeSupport() }
+
+  function copyAccount() {
+    navigator.clipboard.writeText('7074088848').then(() => {
+      showToast('Account number copied', 'success')
+      closeSupport()
+    })
   }
 
   // ── TOAST ──
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast')
-    t.textContent = (type === 'success' ? '✓ ' : '✗ ') + msg
+    t.textContent = (type === 'success' ? '✓ ' : type === 'error' ? '✗ ' : '· ') + msg
     t.className = 'toast show ' + type
     setTimeout(() => t.className = 'toast', 3000)
   }
+
+  // ── INIT ──
+  connectWebSocket()
 </script>
 </body>
 </html>

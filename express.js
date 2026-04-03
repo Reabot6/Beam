@@ -11,10 +11,14 @@ app.use(express.json())
 
 let serverUrl = ''
 const connectedDevices = {}
+const uploadsDir = path.join(__dirname, 'uploads')
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true })
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/')
+        cb(null, uploadsDir)
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname)
@@ -30,13 +34,12 @@ app.get('/', (req, res) => {
 })
 
 app.get('/files', (req, res) => {
-    const files = fs.readdirSync('uploads/')
+    const files = fs.readdirSync(uploadsDir)
     res.send(files)
 })
-
 app.get('/download', (req, res) => {
     const filename = req.query.filename
-    res.download('uploads/' + filename)
+    res.download(path.join(uploadsDir, filename))
 })
 
 app.get('/qr', (req, res) => {
@@ -56,7 +59,7 @@ app.get('/serverurl', (req, res) => {
 })
 app.get('/stream', (req, res) => {
     const filename = req.query.filename
-    const filepath = path.join(__dirname, 'uploads', filename)
+    const filepath = path.join(uploadsDir, filename)
 
     if (!fs.existsSync(filepath)) {
         return res.status(404).send('File not found')
@@ -262,9 +265,9 @@ function startServer() {
 // ── SESSION CLEANUP ──────────────────────────────────
 
 function cleanUploads() {
-    if (fs.existsSync('uploads/')) {
-        fs.rmSync('uploads/', { recursive: true, force: true })
-        fs.mkdirSync('uploads/')
+    if (fs.existsSync(uploadsDir)) {
+        fs.rmSync(uploadsDir, { recursive: true, force: true })
+        fs.mkdirSync(uploadsDir, { recursive: true })
     }
 }
 

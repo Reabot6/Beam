@@ -819,244 +819,6 @@
 </div>
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
-<!-- NOTIFICATION BOARD - ERROR FIX NOTICE -->
-<div class="notification-board" id="errorNotification">
-  <div class="board-content">
-    <div class="board-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-    </div>
-    <div class="board-message">
-      <h3>⚠️ Error Encountered</h3>
-      <p>The issue you're facing is currently being fixed. Thanks for your patience.</p>
-    </div>
-
-  </div>
-</div>
-
-<style>
-  /* NOTIFICATION BOARD STYLES - matches Beam theme */
-  .notification-board {
-    background: linear-gradient(135deg, rgba(20, 8, 8, 0.98) 0%, rgba(15, 10, 20, 0.98) 100%);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 16px;
-    margin-bottom: 28px;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15), 0 0 0 1px rgba(239, 68, 68, 0.1);
-    animation: notificationSlideIn 0.4s ease-out;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .notification-board::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #ef4444, #f97316, #ef4444);
-    animation: progressPulse 2s infinite;
-  }
-
-  .board-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 18px 20px;
-    position: relative;
-  }
-
-  .board-icon {
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    background: rgba(239, 68, 68, 0.12);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-  }
-
-  .board-icon svg {
-    width: 24px;
-    height: 24px;
-    color: #ef4444;
-    stroke-width: 1.8;
-  }
-
-  .board-message {
-    flex: 1;
-  }
-
-  .board-message h3 {
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #ef4444;
-    margin-bottom: 6px;
-  }
-
-  .board-message p {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: #cbd5e1;
-    line-height: 1.5;
-    margin-bottom: 12px;
-  }
-
-  .download-timer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    background: rgba(239, 68, 68, 0.08);
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    width: fit-content;
-  }
-
-  .timer-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: #94a3b8;
-    letter-spacing: 0.3px;
-  }
-
-  .timer-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 18px;
-    font-weight: 700;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.2);
-    padding: 2px 8px;
-    border-radius: 8px;
-    min-width: 42px;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-
-  .timer-unit {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: #64748b;
-  }
-
-  .board-close {
-    flex-shrink: 0;
-    background: transparent;
-    border: none;
-    color: #64748b;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.2s;
-    font-family: monospace;
-    line-height: 1;
-  }
-
-  .board-close:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-  }
-
-  @keyframes notificationSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes progressPulse {
-    0%, 100% {
-      opacity: 0.6;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-
-  /* responsive */
-  @media (max-width: 600px) {
-    .board-content {
-      padding: 14px 16px;
-      gap: 12px;
-    }
-    .board-icon {
-      width: 36px;
-      height: 36px;
-    }
-    .board-icon svg {
-      width: 20px;
-      height: 20px;
-    }
-    .board-message h3 {
-      font-size: 12px;
-    }
-    .board-message p {
-      font-size: 12px;
-    }
-    .timer-count {
-      font-size: 16px;
-      min-width: 36px;
-    }
-    .timer-label {
-      font-size: 10px;
-    }
-  }
-</style>
-
-<script>
-  
-  function closeErrorNotification() {
-    const notification = document.getElementById('errorNotification');
-    if (notification) {
-      // Clear timer to prevent background execution
-      if (downloadTimerInterval) {
-        clearInterval(downloadTimerInterval);
-      }
-      notification.style.animation = 'notificationSlideOut 0.3s ease-in forwards';
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 300);
-    }
-  }
-
-  // Add slide-out animation
-  const styleSheet = document.createElement("style");
-  styleSheet.textContent = `
-    @keyframes notificationSlideOut {
-      from {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateY(-30px);
-        display: none;
-      }
-    }
-  `;
-  document.head.appendChild(styleSheet);
-
-  // Start timer when page loads
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startDownloadTimer);
-  } else {
-    startDownloadTimer();
-  }
-</script>
 
 <script>
   let ws = null
@@ -1479,12 +1241,17 @@ function openDirect() {
     })
   }
 
-  function closeDirect() {
+function closeDirect() {
     document.getElementById('directOverlay').classList.remove('show')
     document.getElementById('directProgress').classList.remove('show')
     document.getElementById('directProgressBar').style.width = '0%'
+    document.getElementById('directProgressPct').textContent = '0%'
+    document.getElementById('directProgressName').textContent = ''
+    document.getElementById('directDeviceList').style.display = 'flex'
+    document.getElementById('directDeviceList').innerHTML = ''
     directFile = null
-  }
+    currentTransferId = null
+}
 
   function closeDirectOnOverlay(e) {
     if (e.target === document.getElementById('directOverlay')) closeDirect()
@@ -1494,7 +1261,8 @@ function openDirect() {
     if (!directFile || !ws || ws.readyState !== WebSocket.OPEN) return
 
     currentTransferId = 'tr-' + Date.now()
-    document.getElementById('directDeviceList').style.display = 'none'
+   document.getElementById('directDeviceList').style.display = 'none'
+document.getElementById('directDeviceList').innerHTML = ''
     document.getElementById('directProgress').classList.add('show')
     document.getElementById('directProgressName').textContent = directFile.name
     document.getElementById('directProgressPct').textContent = 'Waiting...'

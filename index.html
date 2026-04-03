@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beam</title>
+<title>Beam by Reabot6</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -492,7 +492,88 @@
     transition: all 0.2s; letter-spacing: 0.5px;
 }
 
-.preview-close-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* ── DIRECT SEND ── */
+.direct-send-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px;
+    display: flex; flex-direction: column; gap: 20px;
+    transform: scale(0.9); transition: transform 0.3s;
+    max-width: 400px; width: 90%;
+}
+
+.modal-overlay.show .direct-send-modal { transform: scale(1); }
+
+.direct-device-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.2s; width: 100%;
+    font-family: var(--mono); font-size: 13px; color: var(--text);
+}
+
+.direct-device-btn:hover { border-color: var(--purple); background: var(--purple-glow); color: var(--purple); }
+
+.incoming-modal {
+    background: var(--surface); border: 1px solid var(--purple);
+    border-radius: 20px; padding: 36px;
+    display: flex; flex-direction: column; gap: 20px;
+    transform: scale(0.9); transition: transform 0.3s;
+    max-width: 380px; width: 90%;
+    box-shadow: 0 0 40px var(--purple-glow-strong);
+}
+
+.modal-overlay.show .incoming-modal { transform: scale(1); }
+
+.incoming-filename {
+    font-family: var(--mono); font-size: 16px; font-weight: 700;
+    color: var(--text); text-align: center; word-break: break-all;
+}
+
+.incoming-from {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-muted); text-align: center; letter-spacing: 0.5px;
+}
+
+.incoming-size {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text-dim); text-align: center;
+}
+
+.incoming-actions { display: flex; gap: 8px; }
+
+.accept-btn {
+    flex: 1; background: var(--green); border: none; color: white;
+    padding: 14px; border-radius: 10px; font-family: var(--mono);
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 1px; box-shadow: 0 0 20px rgba(16,185,129,0.3);
+}
+
+.accept-btn:hover { background: #059669; }
+
+.reject-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 14px 20px; border-radius: 10px;
+    font-family: var(--mono); font-size: 12px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+}
+
+.reject-btn:hover { border-color: var(--red); color: var(--red); }
+
+.direct-progress {
+    display: none; flex-direction: column; gap: 8px;
+    margin-top: 8px;
+}
+
+.direct-progress.show { display: flex; }
+
+.direct-progress-info {
+    display: flex; justify-content: space-between;
+    font-family: var(--mono); font-size: 11px;
+}
+
+.direct-progress-bar-bg { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.direct-progress-bar { height: 100%; background: var(--purple); border-radius: 4px; width: 0%; transition: width 0.1s; box-shadow: 0 0 8px var(--purple); }
 
   footer {
     margin-top: 60px; padding: 24px 0;
@@ -573,10 +654,12 @@
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       </div>
-      <div class="send-label">TAP TO BEAM FILES</div>
-      <div class="send-sub">select multiple files or drag and drop</div>
+  <div class="send-label">TAP TO BEAM FILES</div>
+<div class="send-sub">select multiple files or drag and drop</div>
     </div>
-    <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)">
+ <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)">
+    <input type="file" id="directFileInput" onchange="handleDirectFileSelect(event)" style="display:none">
+    <button onclick="document.getElementById('directFileInput').click()" style="margin-top:12px;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:10px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--purple)';this.style.color='var(--purple)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">⚡ BEAM DIRECT →</button>
     <div class="upload-queue" id="uploadQueue"></div>
   </div>
 
@@ -667,6 +750,38 @@
     <button class="support-close" onclick="closeSupport()">CLOSE</button>
   </div>
 </div>
+<!-- DIRECT SEND MODAL -->
+<div class="modal-overlay" id="directOverlay" onclick="closeDirectOnOverlay(event)">
+  <div class="direct-send-modal">
+    <div class="support-title">BEAM DIRECT</div>
+    <div class="support-sub" id="directFilename">Select a device to send to directly.</div>
+    <div id="directDeviceList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="direct-progress" id="directProgress">
+      <div class="direct-progress-info">
+        <span id="directProgressName"></span>
+        <span id="directProgressPct">0%</span>
+      </div>
+      <div class="direct-progress-bar-bg">
+        <div class="direct-progress-bar" id="directProgressBar"></div>
+      </div>
+    </div>
+    <button class="support-close" onclick="closeDirect()">CANCEL</button>
+  </div>
+</div>
+
+<!-- INCOMING FILE MODAL -->
+<div class="modal-overlay" id="incomingOverlay">
+  <div class="incoming-modal">
+    <div class="support-title" style="text-align:center">INCOMING FILE</div>
+    <div class="incoming-filename" id="incomingFilename"></div>
+    <div class="incoming-from" id="incomingFrom"></div>
+    <div class="incoming-size" id="incomingSize"></div>
+    <div class="incoming-actions">
+      <button class="accept-btn" onclick="acceptFile()">✓ ACCEPT</button>
+      <button class="reject-btn" onclick="rejectFile()">✗ DECLINE</button>
+    </div>
+  </div>
+</div>
 <!-- PREVIEW MODAL -->
 <div class="modal-overlay" id="previewOverlay" onclick="closePreviewOnOverlay(event)">
   <div class="preview-modal">
@@ -727,7 +842,7 @@
       setTimeout(connectWebSocket, 3000)
     }
 
-    ws.onmessage = (event) => {
+  ws.onmessage = (event) => {
       const message = JSON.parse(event.data)
       if (message.type === 'device-list') {
         renderDeviceList(message.devices)
@@ -738,6 +853,15 @@
       }
       if (message.type === 'clipboard-receive') {
         handleClipboardReceive(message)
+      }
+      if (message.type === 'file-offer') {
+        handleIncomingOffer(message)
+      }
+      if (message.type === 'file-chunk') {
+        handleIncomingChunk(message)
+      }
+      if (message.type === 'file-done') {
+        handleIncomingDone(message)
       }
     }
 
@@ -1036,9 +1160,11 @@ function closePreviewOnOverlay(e) {
 }
 
   // ── QR ──
-  function openQR() {
+function openQR() {
     document.getElementById('modalOverlay').classList.add('show')
-    document.getElementById('modalUrl').textContent = window.location.origin
+    fetch('/serverurl').then(r => r.json()).then(data => {
+      document.getElementById('modalUrl').textContent = data.url
+    })
   }
 
   function closeQR() { document.getElementById('modalOverlay').classList.remove('show') }
@@ -1080,7 +1206,218 @@ function closeTCOnOverlay(e) { if (e.target === document.getElementById('tcOverl
     t.className = 'toast show ' + type
     setTimeout(() => t.className = 'toast', 3000)
   }
+// ── DIRECT SEND ──
+  let directFile = null
+  let currentTransferId = null
+  let currentFromId = null
+  let incomingChunks = {}
 
+  function handleDirectFileSelect(e) {
+    directFile = e.target.files[0]
+    if (!directFile) return
+    e.target.value = ''
+    openDirect()
+  }
+
+function openDirect() {
+    document.getElementById('directFilename').textContent = directFile ? directFile.name : ''
+    const list = document.getElementById('directDeviceList')
+    list.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);text-align:center;padding:20px">Loading devices...</div>'
+    document.getElementById('directOverlay').classList.add('show')
+
+    fetch('/devices').then(r => r.json()).then(devices => {
+      const others = devices.filter(d => d.id !== myDeviceId)
+      if (!others.length) {
+        list.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);text-align:center;padding:20px">NO OTHER DEVICES CONNECTED</div>'
+        return
+      }
+      list.innerHTML = others.map(d => `
+        <button class="direct-device-btn" onclick="sendDirect('${d.id}', '${d.name}')">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)"></div>
+          ${d.name}
+        </button>`).join('')
+    }).catch(() => {
+      list.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--red);text-align:center;padding:20px">Failed to load devices</div>'
+    })
+  }
+
+  function closeDirect() {
+    document.getElementById('directOverlay').classList.remove('show')
+    document.getElementById('directProgress').classList.remove('show')
+    document.getElementById('directProgressBar').style.width = '0%'
+    directFile = null
+  }
+
+  function closeDirectOnOverlay(e) {
+    if (e.target === document.getElementById('directOverlay')) closeDirect()
+  }
+
+  function sendDirect(targetId, targetName) {
+    if (!directFile || !ws || ws.readyState !== WebSocket.OPEN) return
+
+    currentTransferId = 'tr-' + Date.now()
+    document.getElementById('directDeviceList').style.display = 'none'
+    document.getElementById('directProgress').classList.add('show')
+    document.getElementById('directProgressName').textContent = directFile.name
+    document.getElementById('directProgressPct').textContent = 'Waiting...'
+
+    ws.send(JSON.stringify({
+      type: 'file-offer',
+      transferId: currentTransferId,
+      targetId: targetId,
+      filename: directFile.name,
+      filesize: directFile.size
+    }))
+
+    const offeredFile = directFile
+    const offeredTransferId = currentTransferId
+
+    const handleStart = (event) => {
+      const msg = JSON.parse(event.data)
+      if (msg.type === 'file-start' && msg.transferId === offeredTransferId) {
+        ws.removeEventListener('message', handleStart)
+        streamFileChunks(offeredFile, targetId, offeredTransferId)
+      }
+      if (msg.type === 'file-rejected' && msg.transferId === offeredTransferId) {
+        ws.removeEventListener('message', handleStart)
+        showToast(targetName + ' declined the file', 'error')
+        closeDirect()
+      }
+    }
+
+    ws.addEventListener('message', handleStart)
+  }
+
+  function streamFileChunks(file, targetId, transferId) {
+    const CHUNK_SIZE = 64 * 1024
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
+    let chunkIndex = 0
+
+    const reader = new FileReader()
+
+    function readNextChunk() {
+      const start = chunkIndex * CHUNK_SIZE
+      const end = Math.min(start + CHUNK_SIZE, file.size)
+      const blob = file.slice(start, end)
+      reader.readAsDataURL(blob)
+    }
+
+    reader.onload = (e) => {
+      ws.send(JSON.stringify({
+        type: 'file-chunk',
+        targetId: targetId,
+        transferId: transferId,
+        chunk: e.target.result,
+        chunkIndex: chunkIndex,
+        totalChunks: totalChunks
+      }))
+
+      const pct = Math.round(((chunkIndex + 1) / totalChunks) * 100)
+      document.getElementById('directProgressBar').style.width = pct + '%'
+      document.getElementById('directProgressPct').textContent = pct + '%'
+
+      chunkIndex++
+      if (chunkIndex < totalChunks) {
+        readNextChunk()
+      } else {
+        ws.send(JSON.stringify({
+          type: 'file-done',
+          targetId: targetId,
+          transferId: transferId,
+          filename: file.name
+        }))
+        showToast(file.name + ' beamed directly', 'success')
+        setTimeout(() => closeDirect(), 1500)
+      }
+    }
+
+    readNextChunk()
+  }
+
+  // ── INCOMING FILE ──
+  let pendingTransfer = null
+
+  function acceptFile() {
+    if (!pendingTransfer) return
+    document.getElementById('incomingOverlay').classList.remove('show')
+
+    incomingChunks[pendingTransfer.transferId] = {
+      chunks: [],
+      totalChunks: null,
+      filename: pendingTransfer.filename
+    }
+
+    ws.send(JSON.stringify({
+      type: 'file-accept',
+      transferId: pendingTransfer.transferId,
+      fromId: pendingTransfer.fromId
+    }))
+
+    pendingTransfer = null
+  }
+
+  function rejectFile() {
+    if (!pendingTransfer) return
+    ws.send(JSON.stringify({
+      type: 'file-reject',
+      transferId: pendingTransfer.transferId,
+      fromId: pendingTransfer.fromId
+    }))
+    document.getElementById('incomingOverlay').classList.remove('show')
+    pendingTransfer = null
+  }
+
+  function handleIncomingOffer(message) {
+    pendingTransfer = message
+    document.getElementById('incomingFilename').textContent = message.filename
+    document.getElementById('incomingFrom').textContent = 'FROM ' + message.from.toUpperCase()
+    document.getElementById('incomingSize').textContent = formatSize(message.filesize)
+    document.getElementById('incomingOverlay').classList.add('show')
+  }
+
+  function handleIncomingChunk(message) {
+    const transfer = incomingChunks[message.transferId]
+    if (!transfer) return
+    transfer.chunks[message.chunkIndex] = message.chunk
+    transfer.totalChunks = message.totalChunks
+  }
+
+  function handleIncomingDone(message) {
+    const transfer = incomingChunks[message.transferId]
+    if (!transfer) return
+
+    const dataUrls = transfer.chunks
+    const byteArrays = dataUrls.map(dataUrl => {
+      const base64 = dataUrl.split(',')[1]
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      return bytes
+    })
+
+    const totalLength = byteArrays.reduce((sum, arr) => sum + arr.length, 0)
+    const combined = new Uint8Array(totalLength)
+    let offset = 0
+    byteArrays.forEach(arr => { combined.set(arr, offset); offset += arr.length })
+
+    const blob = new Blob([combined])
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = message.filename
+    a.click()
+    URL.revokeObjectURL(url)
+
+    delete incomingChunks[message.transferId]
+    showToast(message.filename + ' received', 'success')
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB'
+  }
   // ── INIT ──
   connectWebSocket()
 </script>

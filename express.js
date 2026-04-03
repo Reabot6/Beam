@@ -51,6 +51,9 @@ app.get('/devices', (req, res) => {
     }))
     res.send(deviceList)
 })
+app.get('/serverurl', (req, res) => {
+    res.send({ url: serverUrl })
+})
 app.get('/stream', (req, res) => {
     const filename = req.query.filename
     const filepath = path.join(__dirname, 'uploads', filename)
@@ -153,6 +156,64 @@ function handleMessage(message, senderId) {
             }))
         }
     }
+
+    if (message.type === 'file-offer') {
+        const target = connectedDevices[message.targetId]
+        if (target && target.ws.readyState === WebSocket.OPEN) {
+            target.ws.send(JSON.stringify({
+                type: 'file-offer',
+                transferId: message.transferId,
+                filename: message.filename,
+                filesize: message.filesize,
+                from: connectedDevices[senderId].name,
+                fromId: senderId
+            }))
+        }
+    }
+
+    if (message.type === 'file-accept') {
+        const sender = connectedDevices[message.fromId]
+        if (sender && sender.ws.readyState === WebSocket.OPEN) {
+            sender.ws.send(JSON.stringify({
+                type: 'file-start',
+                transferId: message.transferId
+            }))
+        }
+    }
+
+    if (message.type === 'file-reject') {
+        const sender = connectedDevices[message.fromId]
+        if (sender && sender.ws.readyState === WebSocket.OPEN) {
+            sender.ws.send(JSON.stringify({
+                type: 'file-rejected',
+                transferId: message.transferId
+            }))
+        }
+    }
+
+    if (message.type === 'file-chunk') {
+        const target = connectedDevices[message.targetId]
+        if (target && target.ws.readyState === WebSocket.OPEN) {
+            target.ws.send(JSON.stringify({
+                type: 'file-chunk',
+                transferId: message.transferId,
+                chunk: message.chunk,
+                chunkIndex: message.chunkIndex,
+                totalChunks: message.totalChunks
+            }))
+        }
+    }
+
+    if (message.type === 'file-done') {
+        const target = connectedDevices[message.targetId]
+        if (target && target.ws.readyState === WebSocket.OPEN) {
+            target.ws.send(JSON.stringify({
+                type: 'file-done',
+                transferId: message.transferId,
+                filename: message.filename
+            }))
+        }
+    }
 }
 
 // ── WEBSOCKET ────────────────────────────────────────
@@ -184,8 +245,9 @@ function startServer() {
         console.log(`Device connected: ${deviceName}`)
         broadcastDeviceList()
 
-        ws.on('message', (data) => {
-            const message = JSON.parse(data)
+    ws.on('message', (data, isBinary) => {
+            if (isBinary) return
+            const message = JSON.parse(data.toString())
             handleMessage(message, deviceId)
         })
 

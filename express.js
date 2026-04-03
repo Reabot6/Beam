@@ -5,13 +5,15 @@ const os = require('os')
 const qrcode = require('qrcode')
 const path = require('path')
 const WebSocket = require('ws')
+const { app: electronApp } = require('electron')
 
 const app = express()
 app.use(express.json())
 
 let serverUrl = ''
 const connectedDevices = {}
-const uploadsDir = path.join(__dirname, 'uploads')
+const userDataPath = electronApp.getPath('userData')
+const uploadsDir = path.join(userDataPath, 'uploads')
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true })
 }

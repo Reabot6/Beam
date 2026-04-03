@@ -462,11 +462,13 @@ async function loadStats() {
     document.getElementById('ver').textContent = latestTag || 'v2.0.1'
     if (latestTag) document.getElementById('latestVer').textContent = latestTag
 
-    const v = latestTag.replace('v', '')
-    const base = `https://github.com/${REPO}/releases/download/`
-    document.getElementById('winDl').href = base + `Beam-Setup-${v}.exe`
-    document.getElementById('macDl').href = base + `Beam-${v}-arm64.dmg`
-    document.getElementById('linuxDl').href = base + `Beam-${v}.AppImage`
+ const v = latestTag.replace('v', '')
+const tag = latestTag
+const base = `https://github.com/${REPO}/releases/download/${tag}/`
+
+document.getElementById('winDl').href   = base + `Beam-Setup-${v}.exe`
+document.getElementById('macDl').href   = base + `Beam-${v}-arm64.dmg`
+document.getElementById('linuxDl').href = base + `Beam-${v}.AppImage`
   } catch(e) {
     ['stars','dls','ver'].forEach(id => document.getElementById(id).textContent = '—')
   }

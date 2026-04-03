@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beam — Local File Transfer, No Internet Required</title>
+<meta name="description" content="Transfer files and clipboard between your devices over WiFi. No internet, no accounts, no cloud. Just scan and go.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --surface2: #161625;
+  --border: #1e1e35;
+  --purple: #8b5cf6;
+  --purple-dim: #4c1d95;
+  --purple-glow: rgba(139,92,246,0.12);
+  --purple-glow-strong: rgba(139,92,246,0.25);
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #475569;
+  --green: #10b981;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px);
+  background-size: 48px 48px; pointer-events: none; z-index: 0;
+}
+.container { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,16,0.88); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); padding: 16px 0;
+}
+.nav-inner { display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+.nav-logo span { color: var(--purple); }
+.nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
+.nav-links a { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-decoration: none; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+.nav-links a:hover { color: var(--purple); }
+.nav-dl { background: var(--purple); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-family: var(--mono); font-size: 11px; cursor: pointer; letter-spacing: 0.5px; text-decoration: none; transition: all 0.2s; box-shadow: 0 0 20px var(--purple-glow-strong); }
+.nav-dl:hover { background: #7c3aed; }
+
+.hero { padding: 100px 0 80px; text-align: center; }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; padding: 6px 16px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; margin-bottom: 32px; }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.hero h1 { font-size: clamp(36px,6vw,68px); font-weight: 700; line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px; }
+.hero h1 em { font-style: normal; background: linear-gradient(135deg,#8b5cf6,#a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 18px; color: var(--text-dim); max-width: 520px; margin: 0 auto 48px; line-height: 1.7; }
+
+.stats { display: flex; align-items: center; justify-content: center; gap: 32px; margin-bottom: 48px; flex-wrap: wrap; }
+.stat { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; color: var(--text-dim); }
+.stat-num { font-size: 20px; font-weight: 700; color: var(--purple); }
+.stat-div { width: 1px; height: 24px; background: var(--border); }
+
+.dl-grid { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.dl-btn { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 14px 24px; border-radius: 12px; font-family: var(--mono); font-size: 12px; cursor: pointer; text-decoration: none; transition: all 0.2s; letter-spacing: 0.5px; min-width: 180px; justify-content: center; }
+.dl-btn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-glow); box-shadow: 0 0 24px var(--purple-glow); transform: translateY(-2px); }
+.dl-primary { background: var(--purple); border-color: var(--purple); color: white; box-shadow: 0 0 32px var(--purple-glow-strong); }
+.dl-primary:hover { background: #7c3aed; color: white; border-color: #7c3aed; }
+.dl-note { font-size: 12px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.5px; }
+
+.mockup-wrap { margin: 80px 0; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 0 80px var(--purple-glow); }
+.mockup-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 8px; }
+.m-dot { width: 12px; height: 12px; border-radius: 50%; }
+.mockup-title-bar { font-family: var(--mono); font-size: 12px; color: var(--text-muted); margin: 0 auto; letter-spacing: 0.5px; }
+.mockup-body { padding: 32px; }
+.mockup-hd { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.m-logo { font-family: var(--mono); font-size: 18px; font-weight: 700; }
+.m-logo span { color: var(--purple); }
+.m-live { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--green); }
+.m-qr { font-family: var(--mono); font-size: 11px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; }
+.m-tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; margin-bottom: 28px; }
+.m-tab { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; padding: 8px 16px; border-radius: 6px; color: var(--text-muted); text-transform: uppercase; }
+.m-tab.active { background: var(--purple); color: white; }
+.m-upload { border: 1px dashed var(--border); border-radius: 14px; padding: 48px 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; background: var(--bg); }
+.m-upload-icon { width: 52px; height: 52px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--purple); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 20px var(--purple-glow-strong); }
+.m-upload-text { font-family: var(--mono); font-size: 12px; color: var(--purple); letter-spacing: 0.5px; }
+.m-upload-sub { font-size: 11px; color: var(--text-muted); }
+.m-direct { margin-top: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 8px 18px; border-radius: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.5px; }
+
+section { padding: 80px 0; }
+hr.div { border: none; border-top: 1px solid var(--border); }
+.sec-label { font-family: var(--mono); font-size: 11px; color: var(--purple); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+.sec-title { font-size: clamp(28px,4vw,42px); font-weight: 700; letter-spacing: -1px; margin-bottom: 16px; }
+.sec-sub { font-size: 17px; color: var(--text-dim); max-width: 560px; line-height: 1.7; }
+
+.steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 24px; margin-top: 48px; }
+.step { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; transition: all 0.2s; }
+.step:hover { border-color: var(--purple); box-shadow: 0 0 24px var(--purple-glow); transform: translateY(-2px); }
+.step-num { font-family: var(--mono); font-size: 11px; color: var(--purple); letter-spacing: 1px; margin-bottom: 16px; }
+.step-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+.step h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.step p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+.features { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 16px; margin-top: 48px; }
+.feature { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; transition: all 0.2s; }
+.feature:hover { border-color: var(--purple); background: var(--surface2); }
+.feat-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--purple-glow); border: 1px solid var(--purple-dim); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; }
+.feature h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.feature p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+.changelog { margin-top: 48px; display: flex; flex-direction: column; gap: 16px; }
+.cl-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; display: grid; grid-template-columns: 130px 1fr; gap: 24px; }
+.cl-ver { font-family: var(--mono); font-size: 13px; color: var(--purple); font-weight: 700; }
+.cl-date { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.5px; }
+.cl-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.cl-lines { display: flex; flex-direction: column; gap: 4px; }
+.cl-line { font-size: 13px; color: var(--text-dim); display: flex; align-items: flex-start; gap: 8px; }
+.cl-line::before { content: '—'; color: var(--purple); flex-shrink: 0; }
+
+.support-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 48px; text-align: center; margin-top: 48px; }
+.support-box h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
+.support-box > p { font-size: 16px; color: var(--text-dim); max-width: 480px; margin: 0 auto 32px; line-height: 1.7; }
+.acct-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 28px; max-width: 400px; margin: 0 auto 24px; }
+.acct-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+.acct-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+.acct-lbl { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+.acct-val { font-family: var(--mono); font-size: 13px; color: var(--text); }
+.acct-num { font-family: var(--mono); font-size: 24px; font-weight: 700; color: var(--purple); letter-spacing: 3px; text-align: center; padding: 16px 0; margin: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.copy-acct { background: var(--purple-glow); border: 1px solid var(--purple-dim); color: var(--purple); padding: 12px 28px; border-radius: 10px; font-family: var(--mono); font-size: 12px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; width: 100%; }
+.copy-acct:hover { background: var(--purple); color: white; }
+
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 48px; }
+.contact-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-decoration: none; color: var(--text); transition: all 0.2s; display: block; }
+.contact-card:hover { border-color: var(--purple); box-shadow: 0 0 24px var(--purple-glow); transform: translateY(-2px); }
+.cc-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+.contact-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.contact-card p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+.cc-link { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--purple); letter-spacing: 0.5px; margin-top: 12px; }
+
+footer { border-top: 1px solid var(--border); padding: 40px 0; }
+.foot-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.foot-logo { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--text); text-decoration: none; }
+.foot-logo span { color: var(--purple); }
+.foot-copy { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+.foot-links { display: flex; gap: 20px; list-style: none; }
+.foot-links a { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.5px; transition: color 0.2s; }
+.foot-links a:hover { color: var(--purple); }
+
+@media (max-width: 700px) {
+  .nav-links { display: none; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .cl-item { grid-template-columns: 1fr; gap: 8px; }
+  .m-tabs { width: 100%; }
+  .m-tab { flex: 1; text-align: center; padding: 8px 6px; font-size: 9px; }
+  .support-box { padding: 32px 20px; }
+  .stats { gap: 16px; }
+  .stat-div { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">beam<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="#how">HOW IT WORKS</a></li>
+        <li><a href="#features">FEATURES</a></li>
+        <li><a href="#changelog">CHANGELOG</a></li>
+        <li><a href="#support">SUPPORT</a></li>
+        <li><a href="#contact">CONTACT</a></li>
+      </ul>
+      <a href="https://github.com/Reabot6/Beam/releases/latest" class="nav-dl">↓ DOWNLOAD</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      FREE · LOCAL NETWORK · NO ACCOUNTS
+    </div>
+    <h1>Transfer files at<br><em>local speed.</em></h1>
+    <p class="hero-sub">Beam turns your PC into a local transfer hub. Scan a QR code, connect any device on your WiFi, and send files, videos, and clipboard instantly — no internet required.</p>
+
+    <div class="stats">
+      <div class="stat"><span class="stat-num" id="stars">—</span><span>GitHub stars</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num" id="dls">—</span><span>downloads</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num" id="ver">—</span><span>latest version</span></div>
+    </div>
+
+    <div class="dl-grid">
+      <a href="https://github.com/Reabot6/Beam/releases/latest" class="dl-btn dl-primary" id="winDl">🪟 &nbsp;Windows .exe</a>
+      <a href="https://github.com/Reabot6/Beam/releases/latest" class="dl-btn" id="macDl">🍎 &nbsp;macOS .dmg</a>
+      <a href="https://github.com/Reabot6/Beam/releases/latest" class="dl-btn" id="linuxDl">🐧 &nbsp;Linux .AppImage</a>
+    </div>
+    <p class="dl-note">Your phone needs no installation — just a browser.</p>
+  </div>
+
+  <div class="mockup-wrap">
+    <div class="mockup-bar">
+      <div class="m-dot" style="background:#ff5f57"></div>
+      <div class="m-dot" style="background:#febc2e"></div>
+      <div class="m-dot" style="background:#28c840"></div>
+      <span class="mockup-title-bar">Beam — localhost:3000</span>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-hd">
+        <div class="m-logo">beam<span>.</span></div>
+        <div class="m-live">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite"></div>
+          LIVE
+        </div>
+        <div class="m-qr">QR CONNECT</div>
+      </div>
+      <div class="m-tabs">
+        <div class="m-tab active">SEND</div>
+        <div class="m-tab">RECEIVE</div>
+        <div class="m-tab">DEVICES</div>
+        <div class="m-tab">CLIPBOARD</div>
+      </div>
+      <div class="m-upload">
+        <div class="m-upload-icon">↑</div>
+        <div class="m-upload-text">TAP TO BEAM FILES</div>
+        <div class="m-upload-sub">select multiple files or drag and drop</div>
+        <div class="m-direct">⚡ BEAM DIRECT →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="div">
+
+<section id="how">
+  <div class="container">
+    <div class="sec-label">HOW IT WORKS</div>
+    <h2 class="sec-title">Three steps.<br>That's it.</h2>
+    <p class="sec-sub">No accounts, no setup, no learning curve. If you can scan a QR code, you can use Beam.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <span class="step-icon">💻</span>
+        <h3>Open Beam on your PC</h3>
+        <p>Download and install Beam. It starts a local server on your WiFi network automatically the moment you open it.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <span class="step-icon">📱</span>
+        <h3>Scan the QR code</h3>
+        <p>Click QR Connect. Point your phone camera at the code. Your phone browser opens Beam instantly — no app needed.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <span class="step-icon">⚡</span>
+        <h3>Start transferring</h3>
+        <p>Send files, stream videos, or beam clipboard text between any connected devices at full local WiFi speed.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">ON CLOSE</div>
+        <span class="step-icon">🔒</span>
+        <h3>Everything is deleted</h3>
+        <p>When you close Beam, all files are permanently wiped. Nothing stays on your machine after a session ends.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="features">
+  <div class="container">
+    <div class="sec-label">FEATURES</div>
+    <h2 class="sec-title">Everything you need.<br>Nothing you don't.</h2>
+    <p class="sec-sub">Built lean. Every feature solves a real problem. Nothing added for show.</p>
+    <div class="features">
+      <div class="feature"><div class="feat-icon">📁</div><h3>File Transfer</h3><p>Send any file in any direction — PC to phone, phone to PC. Select multiple files and they queue automatically with per-file progress.</p></div>
+      <div class="feature"><div class="feat-icon">⚡</div><h3>Beam Direct</h3><p>Send a file straight to a specific connected device. They get an accept/decline popup and the file downloads immediately — no server involved.</p></div>
+      <div class="feature"><div class="feat-icon">📋</div><h3>Clipboard Sync</h3><p>Copy something on your phone, paste it into Beam, pick a device, and send it. Works for links, notes, passwords — anything text.</p></div>
+      <div class="feature"><div class="feat-icon">▶️</div><h3>Stream Without Downloading</h3><p>Videos play directly in the browser. Images preview inline. PDFs and text render on screen. No download required to view.</p></div>
+      <div class="feature"><div class="feat-icon">📲</div><h3>QR Code Connect</h3><p>One scan and your phone is connected. No typing IP addresses, no pairing codes, no app installation. Just your phone camera.</p></div>
+      <div class="feature"><div class="feat-icon">🔒</div><h3>Zero Data Retention</h3><p>All files deleted automatically when you close Beam. No data ever leaves your local network. No accounts, no cloud, no telemetry.</p></div>
+      <div class="feature"><div class="feat-icon">🖥️</div><h3>Live Device List</h3><p>See every device connected to your session in real time. Auto-identified as iPhone, Android, Windows PC, Mac, and more.</p></div>
+      <div class="feature"><div class="feat-icon">🔄</div><h3>Auto Updates</h3><p>Beam checks for new versions on launch and notifies you automatically. No manual reinstalling ever needed.</p></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="changelog">
+  <div class="container">
+    <div class="sec-label">CHANGELOG</div>
+    <h2 class="sec-title">What's new.</h2>
+    <p class="sec-sub">Beam is actively maintained. Every version is documented here.</p>
+    <div class="changelog">
+      <div class="cl-item">
+        <div>
+          <div class="cl-ver" id="latestVer">v1.2.0</div>
+          <div class="cl-date">LATEST</div>
+        </div>
+        <div>
+          <div class="cl-title">Beam Direct + Streaming</div>
+          <div class="cl-lines">
+            <div class="cl-line">Added Beam Direct — send files straight to a specific device without using the server</div>
+            <div class="cl-line">Videos, images, audio, and PDFs now stream and preview in the browser without downloading</div>
+            <div class="cl-line">Fixed clipboard copy on iOS Safari</div>
+            <div class="cl-line">QR modal now shows the actual IP address for manual entry</div>
+            <div class="cl-line">All files deleted automatically on app close</div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <div>
+          <div class="cl-ver">v1.1.0</div>
+          <div class="cl-date">PREVIOUS</div>
+        </div>
+        <div>
+          <div class="cl-title">Clipboard Sync + Devices</div>
+          <div class="cl-lines">
+            <div class="cl-line">Added clipboard sync — beam text between any connected devices</div>
+            <div class="cl-line">Real-time device list with auto device name detection</div>
+            <div class="cl-line">Multiple file selection with sequential upload queue</div>
+            <div class="cl-line">Live WebSocket connection status indicator</div>
+          </div>
+        </div>
+      </div>
+      <div class="cl-item">
+        <div>
+          <div class="cl-ver">v1.0.0</div>
+          <div class="cl-date">INITIAL</div>
+        </div>
+        <div>
+          <div class="cl-title">First Release</div>
+          <div class="cl-lines">
+            <div class="cl-line">Local network file transfer — PC to phone and phone to PC</div>
+            <div class="cl-line">QR code connection — scan and go</div>
+            <div class="cl-line">File download with type icons and grid layout</div>
+            <div class="cl-line">Auto update system via GitHub releases</div>
+            <div class="cl-line">Windows, Mac, and Linux installers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="support">
+  <div class="container">
+    <div class="sec-label">SUPPORT THE PROJECT</div>
+    <h2 class="sec-title">Beam stays free.<br>Always.</h2>
+    <div class="support-box">
+      <h2>Keep Beam Free</h2>
+      <p>Beam is free and will stay free. If it's saved you time and you want to say thanks, a small contribution helps keep it maintained and improved.</p>
+      <div class="acct-card">
+        <div class="acct-row"><span class="acct-lbl">Bank</span><span class="acct-val">Moniepoint MSB</span></div>
+        <div class="acct-row"><span class="acct-lbl">Name</span><span class="acct-val">Adeiza Onimisi Adeolu</span></div>
+        <div class="acct-num">7074088848</div>
+        <button class="copy-acct" onclick="copyAcct(this)">⎘ COPY ACCOUNT NUMBER</button>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);font-style:italic">No pressure at all — the app stays free either way.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<section id="contact">
+  <div class="container">
+    <div class="sec-label">CONTACT</div>
+    <h2 class="sec-title">Got feedback?</h2>
+    <p class="sec-sub">Whether you're a developer or just someone who uses the app — we want to hear from you.</p>
+    <div class="contact-grid">
+      <a href="https://github.com/Reabot6/Beam/issues/new" target="_blank" class="contact-card">
+        <span class="cc-icon">🐛</span>
+        <h3>Report a Bug</h3>
+        <p>Something not working? Open an issue on GitHub and describe what happened. Include your OS and Beam version.</p>
+        <span class="cc-link">github.com/Reabot6/Beam/issues →</span>
+      </a>
+      <a href="https://github.com/Reabot6/Beam/issues/new" target="_blank" class="contact-card">
+        <span class="cc-icon">💡</span>
+        <h3>Suggest a Feature</h3>
+        <p>Have an idea for something Beam should do? Describe it in a GitHub issue. Good ideas get built into the next version.</p>
+        <span class="cc-link">github.com/Reabot6/Beam/issues →</span>
+      </a>
+      <a href="https://github.com/Reabot6/Beam" target="_blank" class="contact-card">
+        <span class="cc-icon">⭐</span>
+        <h3>Star on GitHub</h3>
+        <p>If Beam has been useful, a GitHub star helps others discover it and shows the project is worth maintaining.</p>
+        <span class="cc-link">github.com/Reabot6/Beam →</span>
+      </a>
+      <a href="mailto:onimisiadeolu@gmail.com" class="contact-card">
+        <span class="cc-icon">✉️</span>
+        <h3>Email the Developer</h3>
+        <p>Not on GitHub? Send an email directly. Feedback from everyday users is just as valuable as technical bug reports.</p>
+        <span class="cc-link">onimisiadeolu@gmail.com →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-inner">
+      <a href="#" class="foot-logo">beam<span>.</span></a>
+      <span class="foot-copy">© 2025 Reabot6 · All rights reserved</span>
+      <ul class="foot-links">
+        <li><a href="https://github.com/Reabot6/Beam" target="_blank">GitHub</a></li>
+        <li><a href="https://github.com/Reabot6/Beam/releases" target="_blank">Releases</a></li>
+        <li><a href="https://github.com/Reabot6/Beam/issues" target="_blank">Issues</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+const REPO = 'Reabot6/Beam'
+
+async function loadStats() {
+  try {
+    const [rRepo, rReleases] = await Promise.all([
+      fetch(`https://api.github.com/repos/${REPO}`),
+      fetch(`https://api.github.com/repos/${REPO}/releases`)
+    ])
+    const repo = await rRepo.json()
+    const releases = await rReleases.json()
+
+    document.getElementById('stars').textContent = (repo.stargazers_count || 0).toLocaleString()
+
+    let totalDl = 0
+    let latestTag = ''
+    releases.forEach((r, i) => {
+      if (i === 0) latestTag = r.tag_name
+      r.assets?.forEach(a => { totalDl += a.download_count || 0 })
+    })
+
+    document.getElementById('dls').textContent = totalDl.toLocaleString()
+    document.getElementById('ver').textContent = latestTag || 'v1.0.0'
+    if (latestTag) document.getElementById('latestVer').textContent = latestTag
+
+    const v = latestTag.replace('v', '')
+    const base = `https://github.com/${REPO}/releases/latest/download/`
+    document.getElementById('winDl').href = base + `Beam-Setup-${v}.exe`
+    document.getElementById('macDl').href = base + `Beam-${v}.dmg`
+    document.getElementById('linuxDl').href = base + `Beam-${v}.AppImage`
+  } catch(e) {
+    ['stars','dls','ver'].forEach(id => document.getElementById(id).textContent = '—')
+  }
+}
+
+function copyAcct(btn) {
+  const text = '7074088848'
+  const copy = () => { btn.textContent = '✓ COPIED'; setTimeout(() => { btn.textContent = '⎘ COPY ACCOUNT NUMBER' }, 2000) }
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(copy) }
+  else {
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'
+    document.body.appendChild(ta); ta.focus(); ta.select()
+    document.execCommand('copy'); document.body.removeChild(ta); copy()
+  }
+}
+
+loadStats()
+</script>
+</body>
+</html>

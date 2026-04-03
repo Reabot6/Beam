@@ -51,7 +51,62 @@ app.get('/devices', (req, res) => {
     }))
     res.send(deviceList)
 })
+app.get('/stream', (req, res) => {
+    const filename = req.query.filename
+    const filepath = path.join(__dirname, 'uploads', filename)
 
+    if (!fs.existsSync(filepath)) {
+        return res.status(404).send('File not found')
+    }
+
+    const stat = fs.statSync(filepath)
+    const fileSize = stat.size
+    const ext = path.extname(filename).toLowerCase()
+
+    const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.webm': 'video/webm',
+        '.mkv': 'video/x-matroska',
+        '.mp3': 'audio/mpeg',
+        '.wav': 'audio/wav',
+        '.ogg': 'audio/ogg',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain'
+    }
+
+    const contentType = mimeTypes[ext] || 'application/octet-stream'
+    const range = req.headers.range
+
+    if (range && contentType.startsWith('video') || range && contentType.startsWith('audio')) {
+        const parts = range.replace(/bytes=/, '').split('-')
+        const start = parseInt(parts[0], 10)
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+        const chunksize = (end - start) + 1
+
+        res.writeHead(206, {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize,
+            'Content-Type': contentType
+        })
+
+        fs.createReadStream(filepath, { start, end }).pipe(res)
+    } else {
+        res.writeHead(200, {
+            'Content-Length': fileSize,
+            'Content-Type': contentType,
+            'Accept-Ranges': 'bytes'
+        })
+
+        fs.createReadStream(filepath).pipe(res)
+    }
+})
 app.post('/send', upload.single('file'), (req, res) => {
     res.send('file received and saved')
 })

@@ -435,6 +435,64 @@
   }
 
   .support-close:hover { border-color: var(--red); color: var(--red); }
+  /* ── PREVIEW MODAL ── */
+.preview-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+    transform: scale(0.9); transition: transform 0.3s;
+    width: 92%; max-width: 800px; max-height: 90vh;
+}
+
+.modal-overlay.show .preview-modal { transform: scale(1); }
+
+.preview-filename {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--text-dim); letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.preview-body {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px; max-height: 60vh; overflow: hidden;
+    border-radius: 12px; background: #000;
+}
+
+.preview-body video,
+.preview-body audio,
+.preview-body img {
+    max-width: 100%; max-height: 60vh;
+    border-radius: 8px;
+}
+
+.preview-body audio { width: 100%; background: var(--surface2); }
+
+.preview-body iframe {
+    width: 100%; height: 60vh;
+    border: none; border-radius: 8px;
+}
+
+.preview-actions {
+    display: flex; gap: 8px;
+}
+
+.preview-dl-btn {
+    flex: 1; background: var(--purple); border: none; color: white;
+    padding: 12px; border-radius: 8px; font-family: var(--mono);
+    font-size: 11px; cursor: pointer; transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.preview-dl-btn:hover { background: #7c3aed; }
+
+.preview-close-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 12px 20px; border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.5px;
+}
+
+.preview-close-btn:hover { border-color: var(--red); color: var(--red); }
 
   footer {
     margin-top: 60px; padding: 24px 0;
@@ -569,6 +627,7 @@
     <div class="footer-left">© 2025 <span>Reabot6</span> · Beam · All rights reserved</div>
     <div class="footer-right">
       <a class="footer-link" href="https://github.com/Reabot6" target="_blank">github.com/Reabot6</a>
+      <button class="footer-link" onclick="openTC()" style="background:none;border:none;cursor:pointer;">T&C</button>
       <button class="support-btn" onclick="openSupport()">♡ SUPPORT</button>
     </div>
   </footer>
@@ -608,7 +667,41 @@
     <button class="support-close" onclick="closeSupport()">CLOSE</button>
   </div>
 </div>
-
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewOverlay" onclick="closePreviewOnOverlay(event)">
+  <div class="preview-modal">
+    <div class="preview-filename" id="previewFilename"></div>
+    <div class="preview-body" id="previewBody"></div>
+    <div class="preview-actions">
+      <button class="preview-dl-btn" id="previewDlBtn">↓ DOWNLOAD</button>
+      <button class="preview-close-btn" onclick="closePreview()">CLOSE</button>
+    </div>
+  </div>
+</div>
+<!-- T&C MODAL -->
+<div class="modal-overlay" id="tcOverlay" onclick="closeTCOnOverlay(event)">
+  <div class="support-modal" style="max-height:80vh;overflow-y:auto">
+    <div>
+      <div class="support-title">TERMS & CONDITIONS</div>
+      <div class="support-sub">Last updated: 2025</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">1. LOCAL USE ONLY</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">Beam operates entirely on your local network. No files, text, or data are transmitted to any external server. Everything stays between your devices.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">2. SESSION DATA</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">All files uploaded during a session are automatically and permanently deleted when Beam is closed. We do not retain any user data.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">3. YOUR RESPONSIBILITY</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">You are responsible for the files you transfer using Beam. Do not use Beam to share illegal, harmful, or copyrighted content without authorisation.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">4. NO WARRANTY</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">Beam is provided as-is, free of charge. The developer makes no guarantees about uptime, data integrity, or fitness for any specific purpose.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">5. UPDATES</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">Beam may update automatically. Updates improve the app and fix issues. You can always find the latest version on GitHub.</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--purple);letter-spacing:0.5px">6. CONTACT</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.6">Questions or issues — github.com/Reabot6</div>
+    </div>
+    <button class="support-close" onclick="closeTC()">CLOSE</button>
+  </div>
+</div>
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -729,10 +822,59 @@
     } catch (e) { showToast('Could not load files', 'error') }
   }
 
-  function downloadFile(filename) {
-    window.location.href = '/download?filename=' + encodeURIComponent(filename)
-    showToast('Downloading ' + filename, 'success')
-  }
+ function getFileType(filename) {
+    const ext = filename.split('.').pop().toLowerCase()
+    if (['mp4','mov','webm','mkv'].includes(ext)) return 'video'
+    if (['mp3','wav','ogg'].includes(ext)) return 'audio'
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) return 'image'
+    if (['pdf'].includes(ext)) return 'pdf'
+    if (['txt'].includes(ext)) return 'text'
+    return 'other'
+}
+
+function downloadFile(filename) {
+    const type = getFileType(filename)
+    if (type === 'other') {
+        window.location.href = '/download?filename=' + encodeURIComponent(filename)
+        showToast('Downloading ' + filename, 'success')
+        return
+    }
+    openPreview(filename, type)
+}
+
+function openPreview(filename, type) {
+    const url = '/stream?filename=' + encodeURIComponent(filename)
+    const body = document.getElementById('previewBody')
+    document.getElementById('previewFilename').textContent = filename
+    document.getElementById('previewDlBtn').onclick = () => {
+        window.location.href = '/download?filename=' + encodeURIComponent(filename)
+    }
+
+    if (type === 'video') {
+        body.innerHTML = `<video controls autoplay><source src="${url}"><p style="color:var(--text-dim);padding:20px">Cannot play this video in browser</p></video>`
+    } else if (type === 'audio') {
+        body.innerHTML = `<audio controls autoplay style="width:100%"><source src="${url}"></audio>`
+    } else if (type === 'image') {
+        body.innerHTML = `<img src="${url}" alt="${filename}">`
+    } else if (type === 'pdf') {
+        body.innerHTML = `<iframe src="${url}"></iframe>`
+    } else if (type === 'text') {
+        fetch(url).then(r => r.text()).then(text => {
+            body.innerHTML = `<pre style="color:var(--text);padding:20px;overflow:auto;width:100%;max-height:60vh;font-family:var(--mono);font-size:12px;line-height:1.6">${text}</pre>`
+        })
+    }
+
+    document.getElementById('previewOverlay').classList.add('show')
+}
+
+function closePreview() {
+    document.getElementById('previewOverlay').classList.remove('show')
+    document.getElementById('previewBody').innerHTML = ''
+}
+
+function closePreviewOnOverlay(e) {
+    if (e.target === document.getElementById('previewOverlay')) closePreview()
+}
 
   // ── UPLOAD QUEUE ──
   function handleFileSelect(e) {
@@ -864,15 +1006,34 @@
     showToast('Clipboard from ' + message.from, 'info')
   }
 
-  function copyInboxItem(itemId, btn) {
+ function copyInboxItem(itemId, btn) {
     const text = document.querySelector(`#${itemId} .inbox-text`).textContent
+    
+    // iOS Safari fallback
+    if (!navigator.clipboard) {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        btn.textContent = '✓ COPIED'
+        btn.style.borderColor = 'var(--green)'
+        btn.style.color = 'var(--green)'
+        setTimeout(() => { btn.textContent = '⎘ COPY'; btn.style.borderColor = ''; btn.style.color = '' }, 2000)
+        return
+    }
+
     navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = '✓ COPIED'
-      btn.style.borderColor = 'var(--green)'
-      btn.style.color = 'var(--green)'
-      setTimeout(() => { btn.textContent = '⎘ COPY'; btn.style.borderColor = ''; btn.style.color = '' }, 2000)
+        btn.textContent = '✓ COPIED'
+        btn.style.borderColor = 'var(--green)'
+        btn.style.color = 'var(--green)'
+        setTimeout(() => { btn.textContent = '⎘ COPY'; btn.style.borderColor = ''; btn.style.color = '' }, 2000)
     })
-  }
+}
 
   // ── QR ──
   function openQR() {
@@ -888,13 +1049,30 @@
   function closeSupport() { document.getElementById('supportOverlay').classList.remove('show') }
   function closeSupportOnOverlay(e) { if (e.target === document.getElementById('supportOverlay')) closeSupport() }
 
-  function copyAccount() {
-    navigator.clipboard.writeText('7074088848').then(() => {
-      showToast('Account number copied', 'success')
-      closeSupport()
+ function copyAccount() {
+    const text = '7074088848'
+    if (!navigator.clipboard) {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+        showToast('Account number copied', 'success')
+        closeSupport()
+        return
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Account number copied', 'success')
+        closeSupport()
     })
-  }
-
+}
+function openTC() { document.getElementById('tcOverlay').classList.add('show') }
+function closeTC() { document.getElementById('tcOverlay').classList.remove('show') }
+function closeTCOnOverlay(e) { if (e.target === document.getElementById('tcOverlay')) closeTC() }
   // ── TOAST ──
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast')

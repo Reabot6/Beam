@@ -1,6 +1,6 @@
 {
   "name": "beam",
-  "version": "2.0.1",
+  "version": "2.1.1",
   "main": "main.js",
   "description": "Beam desktop app for sharing files and a reliable ecosystem",
   "author": "Reabot6",

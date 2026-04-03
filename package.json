@@ -18,7 +18,8 @@
      "publish": {
         "provider": "github",
         "owner": "Reabot6",
-        "repo": "Beam"
+        "repo": "Beam",
+         "releaseType": "release"
       }
     ,
     "win": {

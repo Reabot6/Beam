@@ -267,9 +267,19 @@ function startServer() {
 // ── SESSION CLEANUP ──────────────────────────────────
 
 function cleanUploads() {
-    if (fs.existsSync(uploadsDir)) {
-        fs.rmSync(uploadsDir, { recursive: true, force: true })
-        fs.mkdirSync(uploadsDir, { recursive: true })
+    try {
+        if (fs.existsSync(uploadsDir)) {
+            const files = fs.readdirSync(uploadsDir)
+            files.forEach(file => {
+                try {
+                    fs.unlinkSync(path.join(uploadsDir, file))
+                } catch (e) {
+                    console.log('Could not delete file:', file, e.message)
+                }
+            })
+        }
+    } catch (e) {
+        console.log('cleanUploads error:', e.message)
     }
 }
 

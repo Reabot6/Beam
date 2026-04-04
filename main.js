@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const { startServer, cleanUploads } = require('./express.js')
 
@@ -25,15 +25,16 @@ app.whenReady().then(() => {
         autoUpdater.checkForUpdatesAndNotify()
 
         autoUpdater.on('update-available', () => {
-            win.webContents.executeJavaScript(`
-                showToast('New update available — downloading...', 'success')
-            `)
+            win.webContents.executeJavaScript(`showUpdateModal('available')`)
+        })
+
+        autoUpdater.on('download-progress', (progress) => {
+            const pct = Math.round(progress.percent)
+            win.webContents.executeJavaScript(`showUpdateModal('downloading', ${pct})`)
         })
 
         autoUpdater.on('update-downloaded', () => {
-            win.webContents.executeJavaScript(`
-                showToast('Update ready — restart Beam to apply it', 'success')
-            `)
+            win.webContents.executeJavaScript(`showUpdateModal('ready')`)
         })
 
     }, 2000)
@@ -42,4 +43,8 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     cleanUploads()
     app.quit()
+})
+
+ipcMain.on('restart-app', () => {
+    autoUpdater.quitAndInstall()
 })

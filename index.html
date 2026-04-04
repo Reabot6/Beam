@@ -818,6 +818,18 @@
   </div>
 </div>
 <!-- TOAST -->
+ <!-- UPDATE MODAL -->
+<div class="modal-overlay" id="updateOverlay">
+  <div class="support-modal" style="text-align:center;align-items:center">
+    <div class="support-title" id="updateTitle">UPDATE AVAILABLE</div>
+    <div class="support-sub" id="updateSub">A new version of Beam is downloading...</div>
+    <div style="width:100%;background:var(--surface2);border-radius:4px;overflow:hidden;height:4px;margin:8px 0">
+      <div id="updateBar" style="height:100%;background:var(--purple);width:0%;transition:width 0.3s;box-shadow:0 0 8px var(--purple)"></div>
+    </div>
+    <div id="updatePct" style="font-family:var(--mono);font-size:12px;color:var(--purple)">0%</div>
+    <button class="support-close" id="updateBtn" onclick="restartBeam()" style="display:none">RESTART TO UPDATE</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -825,15 +837,50 @@
   let myDeviceId = null
   let uploadQueue = []
   let isUploading = false
+function showUpdateModal(state, pct) {
+    const overlay = document.getElementById('updateOverlay')
+    const title = document.getElementById('updateTitle')
+    const sub = document.getElementById('updateSub')
+    const bar = document.getElementById('updateBar')
+    const pctEl = document.getElementById('updatePct')
+    const btn = document.getElementById('updateBtn')
 
+    overlay.classList.add('show')
+
+    if (state === 'available') {
+        title.textContent = 'UPDATE AVAILABLE'
+        sub.textContent = 'Downloading the latest version of Beam...'
+    }
+
+    if (state === 'downloading') {
+        title.textContent = 'UPDATING BEAM'
+        sub.textContent = 'Please keep the app open while downloading.'
+        bar.style.width = pct + '%'
+        pctEl.textContent = pct + '%'
+    }
+
+    if (state === 'ready') {
+        title.textContent = 'UPDATE READY'
+        sub.textContent = 'Beam has been updated. Restart to apply the new version.'
+        bar.style.width = '100%'
+        pctEl.textContent = '100%'
+        btn.style.display = 'block'
+    }
+}
+
+function restartBeam() {
+    const { ipcRenderer } = require('electron')
+    ipcRenderer.send('restart-app')
+}
   // ── WEBSOCKET ──
   function connectWebSocket() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
     ws = new WebSocket(`${protocol}//${window.location.host}`)
 
-    ws.onopen = () => {
+   ws.onopen = () => {
       document.getElementById('wsDot').className = 'ws-dot connected'
       document.getElementById('wsLabel').textContent = 'LIVE'
+      if (Notification.permission === 'default') Notification.requestPermission()
     }
 
     ws.onclose = () => {
@@ -1107,6 +1154,14 @@ function closePreviewOnOverlay(e) {
   }
 
   function handleClipboardReceive(message) {
+     if (Notification.permission === 'granted') {
+        new Notification('Beam · New Clipboard', {
+            body: message.text.substring(0, 80),
+            icon: '/assets/icon.png'
+        })
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission()
+    }
     const inbox = document.getElementById('clipboardInbox')
     const items = document.getElementById('inboxItems')
     inbox.style.display = 'flex'

@@ -174,6 +174,102 @@ footer { border-top: 1px solid var(--border); padding: 40px 0; }
   .stats { gap: 16px; }
   .stat-div { display: none; }
 }
+/* Advanced Flip & Android Section */
+.android-teaser {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px;
+  margin-top: 50px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(139, 92, 246, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.android-header { margin-bottom: 30px; }
+
+/* Flip Clock Styles */
+.flip-container {
+  display: flex;
+  gap: 15px;
+  perspective: 1000px;
+  margin-bottom: 30px;
+}
+
+.flip-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.flip-card {
+  position: relative;
+  width: 70px;
+  height: 90px;
+  background: #161625;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 90px;
+  color: var(--purple);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+/* Subtle divider for the flip look */
+.flip-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(0,0,0,0.3);
+  z-index: 5;
+}
+
+.flip-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* TikTok Button */
+.tiktok-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #000;
+  border: 1px solid #fe2c55; /* TikTok Red */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(254, 44, 85, 0.3);
+}
+
+.tiktok-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(254, 44, 85, 0.6);
+  background: #fe2c55;
+}
+
+/* Entry Animation */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.android-teaser { animation: slideUp 0.8s ease-out; }
 </style>
 
 </head>
@@ -219,8 +315,39 @@ footer { border-top: 1px solid var(--border); padding: 40px 0; }
     </div>
     <p class="dl-note">Your phone needs no installation — just a browser.</p>
   </div>
+<div class="android-teaser">
+  <div class="android-header">
+    <span class="android-label">COMING TO PLAY STORE</span>
+    <h2 style="font-size: 32px; margin-bottom: 10px;">Beam for Android</h2>
+ <p style="color: var(--text-dim); max-width: 500px; margin: 0 auto;">
+Beam is coming to Play Store giving Android users a simple, clean way to share files with Apple devices. One person opens Beam, the other just scans with their normal camera. No extra apps. No setup. Fast cross-device transfers, instantly.
+</p>
+      
+  </div>
 
-  <div class="mockup-wrap">
+  <div class="flip-container">
+    <div class="flip-unit">
+      <div class="flip-card" id="days">00</div>
+      <div class="flip-label">Days</div>
+    </div>
+    <div class="flip-unit">
+      <div class="flip-card" id="hours">00</div>
+      <div class="flip-label">Hours</div>
+    </div>
+    <div class="flip-unit">
+      <div class="flip-card" id="mins">00</div>
+      <div class="flip-label">Mins</div> 
+    </div>
+    <div class="flip-unit">
+      <div class="flip-card" id="secs">00</div>
+      <div class="flip-label">Secs</div>
+    </div>
+  </div>
+
+  <a href="https://www.tiktok.com/@beambyreabot6" target="_blank" class="tiktok-btn">
+    <span>📱</span> FOLLOW ON TIKTOK FOR UPDATES & CASH PRIZES
+  </a>
+</div>  <div class="mockup-wrap">
     <div class="mockup-bar">
       <div class="m-dot" style="background:#ff5f57"></div>
       <div class="m-dot" style="background:#febc2e"></div>
@@ -438,6 +565,41 @@ footer { border-top: 1px solid var(--border); padding: 40px 0; }
 </footer>
 
 <script>
+  // Android Countdown Logic
+// Target: 20 days from current run time
+const countdownDate = new Date().getTime() + (20 * 24 * 60 * 60 * 1000);
+
+function updateFlipClock() {
+  const now = new Date().getTime();
+  const distance = countdownDate - now;
+
+  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  updateElement('days', days);
+  updateElement('hours', hours);
+  updateElement('mins', minutes);
+  updateElement('secs', seconds);
+}
+
+function updateElement(id, value) {
+  const el = document.getElementById(id);
+  const newValue = value.toString().padStart(2, '0');
+  
+  if (el.textContent !== newValue) {
+    // Basic Flip Animation Trigger
+    el.style.transform = 'rotateX(20deg)';
+    setTimeout(() => {
+      el.textContent = newValue;
+      el.style.transform = 'rotateX(0deg)';
+    }, 150);
+  }
+}
+
+setInterval(updateFlipClock, 1000);
+updateFlipClock();
 const REPO = 'Reabot6/Beam'
 
 async function loadStats() {

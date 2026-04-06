@@ -565,13 +565,18 @@ Beam is coming to Play Store giving Android users a simple, clean way to share f
 </footer>
 
 <script>
-  // Android Countdown Logic
-// Target: 20 days from current run time
-const countdownDate = new Date().getTime() + (20 * 24 * 60 * 60 * 1000);
+// Set the fixed start date (first day app was released or installed)
+const startDate = new Date("2026-04-01T00:00:00Z").getTime();
+
+// 20-day window
+const totalPeriod = 20 * 24 * 60 * 60 * 1000;
 
 function updateFlipClock() {
-  const now = new Date().getTime();
-  const distance = countdownDate - now;
+  const now = Date.now();
+  const elapsed = now - startDate;
+  const remaining = totalPeriod - elapsed;
+
+  const distance = Math.max(remaining, 0);
 
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
   const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -587,9 +592,8 @@ function updateFlipClock() {
 function updateElement(id, value) {
   const el = document.getElementById(id);
   const newValue = value.toString().padStart(2, '0');
-  
+
   if (el.textContent !== newValue) {
-    // Basic Flip Animation Trigger
     el.style.transform = 'rotateX(20deg)';
     setTimeout(() => {
       el.textContent = newValue;
